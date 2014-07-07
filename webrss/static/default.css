@@ -1,0 +1,30 @@
+html{ height: 100%; }
+body{ height: 100%; }
+
+footer#footer{ width: 100%; height: 40px; background-color: #f5f5f5; line-height: 40px; padding: 0 15px;}
+
+#wrap{width: 100%; height: calc(100% - 40px); }
+
+#rss{width: 100%; height: 100%; padding: 51px 0 0 0; margin: 0;}
+
+#channels{ height: 100%; overflow: auto; border-right: 1px dashed gray; }
+#channels li img.favicon-url{ height: 16px; widows: 16px; border: 0; }
+
+#feeds{ height: 100%; margin: 0 !important; padding: 0 !important;}
+#feeds #list{height: 50%; width: 100%; overflow: auto;}
+#feeds #list .feed-list{height: 100%; width: 100%; margin-bottom: 0;}
+#feeds #list .feed-list thead{display: block; }
+#feeds #list .feed-list tbody{display: block; overflow: auto; height: 90%}
+#feeds #list .feed-list tbody tr{cursor: hand; cursor: pointer;}
+#feeds #list .feed-list tbody tr.bold{font-weight: bold;}
+#feeds #content{height: 50%; width: 100%; overflow: auto; }
+
+.container{ width: auto; margin: 0 15px;}
+section.rss-entry{}
+section.rss-entry header{font-size: 20px;}
+
+.navbar{margin-bottom: 0 !important; min-height: 30px !important;}
+
+ul.nav li button{margin-top: 7px; margin-right: 7px;}
+
+.pointer{cursor: hand; cursor: pointer;}
