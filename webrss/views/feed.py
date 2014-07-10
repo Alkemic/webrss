@@ -52,16 +52,37 @@ def create():
         return {'status': 'fail'}
 
 
-@app.route('/api/feed/update/<int:pk>', endpoint='feed.update', methods=['POST'])
+@app.route('/api/feed/update', endpoint='feed.update', methods=['POST'])
 @jsonify
-def update(pk):
+def update():
     """
     Update content of feed
-    todo:
     """
-    entry = Feed.get(Feed.id == pk)
+    if not all(name in request.form for name in ('url', 'pk', 'category')):
+        return {'status': 'fail', 'message': 'Not all parameters were sent'}
 
-    return {}
+    try:
+        pk = request.form['pk']
+        entry = Feed.get(Feed.id == pk)
+    except ValueError:
+        return {'status': 'fail', 'message': 'Wrong parameter'}
+    except peewee.DoesNotExist:
+        return {'status': 'fail', 'message': 'Entry doesn\'t exists'}
+
+    try:
+        category = Category.get(Category.id == request.form['category'])
+    except ValueError:
+        return {'status': 'fail', 'message': 'Wrong parameter'}
+    except peewee.DoesNotExist:
+        return {'status': 'fail', 'message': 'Category doesn\'t exists'}
+
+    try:
+        entry.feed_url = category
+        entry.category = category
+        entry.save()
+        return {'status': 'ok'}
+    except Exception as e:  # todo: don't catch'em all.
+        return {'status': 'fail', 'message': 'Exception occurred during save'}
 
 
 @app.route('/api/feed/delete/', endpoint='feed.delete', methods=['POST'])
