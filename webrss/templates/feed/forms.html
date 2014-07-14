@@ -1,0 +1,156 @@
+<div class="modal fade" id="delete-feed" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Confirm deletion</h4>
+            </div>
+            <div class="modal-body">
+                <p>Do you want to delete "<span class="item-to-delete-name"></span>"?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="reset" class="btn btn-default" data-dismiss="modal"><i class="glyphicon glyphicon-remove"></i> Close</button>
+                <button type="submit" class="btn btn-primary"><i class="glyphicon glyphicon-trash"></i> Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="feed-form" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-mode="add">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">Add feed</h4>
+            </div>
+            <form role="form" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="url">Feed url</label>
+                        <input type="url" class="form-control" id="url" name="url" placeholder="Enter url" required="required">
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select class="form-control" id="category" name="category" placeholder="Select category" required="required">
+                            <option>---</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="reset" class="btn btn-default" data-dismiss="modal"><i class="glyphicon glyphicon-remove"></i> Close</button>
+                    <button type="submit" class="btn btn-primary"><i class="glyphicon glyphicon-save"></i> Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        var div_channels = $('div#channels'),
+            feed_modal = $('div#feed-form'),
+            feed_modal_title = $('.modal-title', feed_modal),
+            feed_form = $('form', feed_modal),
+            feed_form_category = $("select#category", feed_form),
+            feed_form_url = $("input#url", feed_form),
+            feed_delete_modal = $('div#delete-feed'),
+            feed_delete_modal_submit = $('button[type=submit]', feed_delete_modal),
+            feed_form_create = $('#feed-form-create');
+
+        // opening add feed modal
+        feed_form_create.click(function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            feed_form_url.val('');
+            feed_form_category.val('');
+            feed_form.data('mode', 'create').data('feed-id', null);
+            feed_modal_title.html('Add feed');
+            feed_modal.modal();
+        });
+
+        // adding new feed from category level
+        $('h4 .glyphicon-plus', div_channels).click(function(e){
+            e.preventDefault();
+            var self = $(this),
+                category_id = self.data('category-id');
+
+            feed_form_url.val('');
+            feed_form_category.val(category_id);
+            feed_form.data('mode', 'create').data('feed-id', null);
+            feed_modal_title.html('Add feed');
+            feed_modal.modal();
+        });
+
+        // saving/updating feed information
+        feed_form.submit(function(e){
+            e.preventDefault();
+
+            var feed_form_data = feed_form.serialize(),
+                form_mode = feed_form.data('mode');
+
+            if(form_mode == 'update') // append pk if updating
+                feed_form_data += '&pk=' + feed_form.data('feed-id');
+
+            $.post(
+                form_mode == 'update' ? "{{ url_for('feed.update') }}" : "{{ url_for('feed.create') }}",
+                feed_form_data,
+                function (result){
+                    if(result.status == 'ok'){
+                        location.reload(true);
+                    }else{
+                        alert('An error occured.');
+                    }
+            }, 'json');
+        });
+
+        // updating a feed
+        // opening and populate form with fetched data
+        $('li.feed i[data-feed-id].glyphicon-edit', div_channels).click(function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            var self = $(this),
+                feed_id = self.data('feed-id');
+
+            feed_modal_title.html('Edit feed');
+
+            $.getJSON('/api/feed/update', {pk: feed_id}, function(data){
+                feed_form_url.val(data.url);
+                feed_form_category.val(data.category);
+                feed_form.data('feed-id', feed_id);
+                feed_form.data('mode', 'update');
+                feed_modal.modal();
+            });
+        });
+
+        // deleting a feed
+        $('li.feed i[data-feed-id].glyphicon-trash', div_channels).click(function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            var self = $(this),
+                feed_id = self.data('feed-id');
+
+            feed_delete_modal.modal();
+            feed_delete_modal_submit.data('feed-id', feed_id);
+            $('span.item-to-delete-name', feed_delete_modal).html($('a.feed-link[data-feed-id='+feed_id+'] span.feed-title').html());
+        });
+
+        // confirming feed deletion
+        feed_delete_modal_submit.click(function(e){
+            e.preventDefault();
+            var self = $(this),
+                feed_id = self.data('feed-id');
+
+            $.post("{{ url_for('feed.delete') }}", {pk: feed_id}, function(result){
+                if(result.status == 'ok'){
+                    location.reload(true);
+                }else{
+                    alert(result.message);
+                }
+            });
+        });
+    });
+</script>

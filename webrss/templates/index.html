@@ -37,7 +37,7 @@
                         <!--<li><a href="/">Add</a></li>-->
 
                         <li><button class="btn btn-primary btn-sl" data-toggle="modal" data-target="#add-category"><i class="glyphicon glyphicon-plus"></i> Add category</button></li>
-                        <li><button class="btn btn-primary btn-sl" data-toggle="modal" data-target="#add-feed"><i class="glyphicon glyphicon-plus"></i> Add feed</button></li>
+                        <li><button class="btn btn-primary btn-sl" id="feed-form-create"><i class="glyphicon glyphicon-plus"></i> Add feed</button></li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li>
@@ -77,6 +77,7 @@
                             <span class="pull-right">
                                 <span class="badge">{{ feed.count_un_read() }}</span>
                                 &nbsp;<i class="glyphicon glyphicon-trash pointer" data-feed-id="{{ feed.id }}" title="Delete this feed"></i>
+                                &nbsp;<i class="glyphicon glyphicon-edit pointer" data-feed-id="{{ feed.id }}" title="Edit this feed"></i>
                                 <!--&nbsp;&nbsp; <i class="glyphicon glyphicon-edit"></i>-->
                             </span>
                         </a>
@@ -99,43 +100,15 @@
 
     </div><!-- /#wrap -->
 
-    {% include 'category/add_form.html' with context %}
-    {% include 'feed/add_form.html' with context %}
+    {% include 'category/forms.html' with context %}
+    {% include 'feed/forms.html' with context %}
 
     <script>
         $(document).ready(function(){
             var div_channels = $('div#channels'),
                 entries_list = $('#feeds div#list'),
                 entry_content = $('#feeds div#content'),
-                feed_row = $('tbody tr', entries_list),
-                feed_delete_modal = $('div#delete-feed'),
-                feed_delete_modal_submit = $('button[type=submit]', feed_delete_modal)
-
-            // deleting a feed
-            $('li.feed i[data-feed-id].glyphicon-trash', div_channels).click(function(e){
-                e.preventDefault();
-                e.stopPropagation();
-                var self = $(this),
-                    feed_id = self.data('feed-id');
-
-                feed_delete_modal.modal();
-                feed_delete_modal_submit.data('feed-id', feed_id);
-                $('span.item-to-delete-name', feed_delete_modal).html($('a.feed-link[data-feed-id='+feed_id+'] span.feed-title').html());
-            });
-
-            feed_delete_modal_submit.click(function(e){
-                e.preventDefault();
-                var self = $(this),
-                    feed_id = self.data('feed-id');
-
-                $.post("{{ url_for('feed.delete') }}", {pk: feed_id}, function(result){
-                    if(result.status == 'ok'){
-                        location.reload(true);
-                    }else{
-                        alert(result.message);
-                    }
-                });
-            });
+                feed_row = $('tbody tr', entries_list);
 
             //
             $('#channels ul li a').click(function(e){
@@ -164,35 +137,8 @@
                 });
             });
 
-            // adding new feed from category
-            $('h4 .glyphicon-plus', div_channels).click(function(e){
-                e.preventDefault();
-                var self = $(this),
-                    category_id = self.data('category-id');
-
-                $('div#add-feed select#category').val(category_id);
-                $('#add-feed').modal();
-            });
-
         });
     </script>
 
-    <div class="modal fade" id="delete-feed" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                    <h4 class="modal-title">Confirm deletion</h4>
-                </div>
-                <div class="modal-body">
-                    <p>Do you want to delete "<span class="item-to-delete-name"></span>"?</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="reset" class="btn btn-default" data-dismiss="modal"><i class="glyphicon glyphicon-remove"></i> Close</button>
-                    <button type="submit" class="btn btn-primary"><i class="glyphicon glyphicon-trash"></i> Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

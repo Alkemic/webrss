@@ -52,22 +52,33 @@ def create():
         return {'status': 'fail'}
 
 
-@app.route('/api/feed/update', endpoint='feed.update', methods=['POST'])
+@app.route('/api/feed/update', endpoint='feed.update', methods=['POST', 'GET'])
 @jsonify
 def update():
     """
     Update content of feed
     """
-    if not all(name in request.form for name in ('url', 'pk', 'category')):
-        return {'status': 'fail', 'message': 'Not all parameters were sent'}
+    is_get = request.method == 'GET'
+    pk = request.args.get('pk', None) if is_get else request.form.get('pk', None)
+    print request.args
+    print request.form
+
+    if pk is None:
+        return {'status': 'fail', 'message': 'Wrong parameter'}
 
     try:
-        pk = request.form['pk']
         entry = Feed.get(Feed.id == pk)
+        """ :type : Feed """
     except ValueError:
         return {'status': 'fail', 'message': 'Wrong parameter'}
     except peewee.DoesNotExist:
         return {'status': 'fail', 'message': 'Entry doesn\'t exists'}
+
+    if is_get:  # if requesting via GET, return feed data
+        return {'category': entry.category.id, 'url': entry.feed_url}
+
+    if not all(name in request.form for name in ('url', 'pk', 'category')):
+        return {'status': 'fail', 'message': 'Not all parameters were sent'}
 
     try:
         category = Category.get(Category.id == request.form['category'])
@@ -77,7 +88,7 @@ def update():
         return {'status': 'fail', 'message': 'Category doesn\'t exists'}
 
     try:
-        entry.feed_url = category
+        entry.feed_url = request.form['category']
         entry.category = category
         entry.save()
         return {'status': 'ok'}

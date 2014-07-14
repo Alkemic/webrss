@@ -1,25 +1,16 @@
-<div class="modal fade" id="add-feed" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="add-category" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
                         class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="myModalLabel">Add feed</h4>
+                <h4 class="modal-title" id="myModalLabel">Add category</h4>
             </div>
             <form role="form" method="post">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="url">Feed url</label>
-                        <input type="url" class="form-control" id="url" name="url" placeholder="Enter url" required="">
-                    </div>
-                    <div class="form-group">
-                        <label for="category">Category</label>
-                        <select class="form-control" id="category" name="category" required="">
-                            <option>---</option>
-                            {% for category in categories %}
-                            <option value="{{ category.id }}">{{ category.title }}</option>
-                            {% endfor %}
-                        </select>
+                        <label for="category-name">Category name</label>
+                        <input type="text" class="form-control" id="category-name" name="category-name" placeholder="Enter name" required="">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -33,22 +24,25 @@
 
 <script>
     $(document).ready(function(){
-        var create_feed = $('div#add-feed form');
-        var select_category = $("select#category", create_feed);
+        var create_category = $('div#add-category form');
 
-        create_feed.submit(function(e){
+        create_category.submit(function(e){
             e.preventDefault();
 
             $.post(
-                "{{ url_for('feed.create') }}",
-                create_feed.serializeArray(),
+                "{{ url_for('category.create') }}",
+                create_category.serializeArray(),
                 function (result){
                     if(result.status == 'ok'){
                         location.reload(true);
                     }else{
                         alert('An error occured.');
                     }
-            }, 'json');
+                },
+                'json'
+            );
         });
+
+
     });
 </script>
