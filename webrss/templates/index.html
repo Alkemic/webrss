@@ -7,7 +7,22 @@
     <link href="//netdna.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css" rel="stylesheet" />
     <link href="//netdna.bootstrapcdn.com/bootstrap/latest/css/bootstrap-theme.min.css" rel="stylesheet" />
     <link href="{{ url_for('static', filename='default.css') }}" rel="stylesheet" />
+    <script>
+        var webrss = webrss || {};
+        webrss.url = webrss.url || {};
 
+        webrss.url.feed_index = "{{ url_for('feed.index') }}";
+        webrss.url.feed_create = "{{ url_for('feed.create') }}";
+        webrss.url.feed_update = "{{ url_for('feed.update') }}";
+        webrss.url.feed_delete = "{{ url_for('feed.delete') }}";
+
+        webrss.url.category_index = "{{ url_for('category.index') }}";
+        webrss.url.category_create = "{{ url_for('category.create') }}";
+        webrss.url.category_update = "{{ url_for('category.update') }}";
+        webrss.url.category_delete = "{{ url_for('category.delete') }}";
+
+        webrss.url.entry_fetch = "{{ url_for('entry.fetch') }}";
+    </script>
     <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.js"></script>
@@ -96,7 +111,7 @@
             </div>
         </div>
 
-        <footer id="footer">&copy; 2014 <a href="http://danielczuba.pl">Daniel Czuba</a></footer>
+        <footer id="footer">&copy; 2014 <a href="http://danielczuba.pl" title="Daniel Alkemic Czuba">Daniel Czuba</a></footer>
 
     </div><!-- /#wrap -->
 
@@ -110,11 +125,11 @@
                 entry_content = $('#feeds div#content'),
                 feed_row = $('tbody tr', entries_list);
 
-            //
+            // loading feed content
             $('#channels ul li a').click(function(e){
                 e.preventDefault();
                 var feed_id = $(this).data('feed-id');
-                $.post("{{ url_for('feed.index') }}", {feed_id: feed_id}, function(res){
+                $.post(webrss.url.feed_index, {feed_id: feed_id}, function(res){
                     entries_list.html(res);
                 });
             });
@@ -127,7 +142,7 @@
                     entry_id = self.data('entry-id'),
                     entry_feed_id = self.data('feed-id');
 
-                $.post("{{ url_for('entry.fetch') }}", {pk: entry_id}, function(content){
+                $.post(webrss.url.entry_fetch, {pk: entry_id}, function(content){
                     entry_content.html(content);
                     if(self.hasClass('bold')){
                         var feed_badge = $('a[data-feed-id='+entry_feed_id+'].feed-link span.badge');
