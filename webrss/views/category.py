@@ -1,10 +1,13 @@
 # -*- coding:utf-8 -*-
-from flask import render_template, request, g
-from peewee import fn
+from datetime import datetime
+
+from flask import request
+from peewee import fn, DoesNotExist, DatabaseError
+
 from webrss.decorators import jsonify
 from webrss.functions import categories_dict
 from webrss.main import app
-from webrss.models import Category, Feed
+from webrss.models import Category
 
 
 @app.route('/api/category/list', endpoint='category.index')
@@ -26,17 +29,56 @@ def create():
         return {'status': 'fail'}
 
 
-@app.route('/api/category/update/<int:pk>', endpoint='category.update', methods=['POST'])
+@app.route('/api/category/update', endpoint='category.update', methods=['POST', 'GET'])
 @jsonify
-def update(pk):
-    category = Category.get(Category.id == pk)
+def update():
+    is_get = request.method == 'GET'
+    pk = request.args.get('pk', None) if is_get else request.form.get('pk', None)
 
-    return {}
+    if pk is None:
+        return {'status': 'fail', 'message': 'Wrong parameter'}
+
+    try:
+        entry = Category.get(Category.id == pk)
+        """ :type : Category """
+    except ValueError:
+        return {'status': 'fail', 'message': 'Wrong parameter'}
+    except DoesNotExist:
+        return {'status': 'fail', 'message': 'Entry doesn\'t exists'}
+
+    if is_get:  # if requesting via GET, return feed data
+        return {'name': entry.title}
+
+    if not all(name in request.form for name in ('pk', 'category-name')):
+        return {'status': 'fail', 'message': 'Not all parameters were sent'}
+
+    try:
+        entry.title = request.form['category-name']
+        entry.save()
+        return {'status': 'ok'}
+    except Exception as e:  # todo: don't catch'em all.
+        return {'status': 'fail', 'message': 'Exception occurred during save'}
 
 
-@app.route('/api/category/delete/<int:pk>', endpoint='category.delete', methods=['POST'])
+@app.route('/api/category/delete', endpoint='category.delete', methods=['POST'])
 @jsonify
-def delete(pk):
-    entries = Category.select().where(Category.deleted_at == None).dicts()
+def delete():
+    """
+    Delete category
+    """
+    try:
+        pk = int(request.form['pk'])
+        entry = Category.get(Category.id == pk)
+    except ValueError:
+        return {'status': 'fail', 'message': 'Wrong parameter'}
+    except DoesNotExist:
+        return {'status': 'fail', 'message': 'Entry doesn\'t exists'}
 
-    return {'categories': categories_dict()}
+    entry.deleted_at = datetime.now()
+    print entry
+    try:
+        entry.save()
+    except DatabaseError:
+        return {'status': 'fail', 'message': 'Exception occurred during deleting'}
+
+    return {'status': 'ok'}

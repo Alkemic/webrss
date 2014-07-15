@@ -65,6 +65,7 @@
         feed_form_create.click(function(e){
             e.preventDefault();
             e.stopPropagation();
+
             feed_form_url.val('');
             feed_form_category.val('');
             feed_form.data('mode', 'create').data('feed-id', null);
@@ -75,6 +76,7 @@
         // adding new feed from category level
         $('h4 .glyphicon-plus', div_channels).click(function(e){
             e.preventDefault();
+
             var self = $(this),
                 category_id = self.data('category-id');
 
@@ -96,7 +98,7 @@
                 feed_form_data += '&pk=' + feed_form.data('feed-id');
 
             $.post(
-                form_mode == 'update' ? "{{ url_for('feed.update') }}" : "{{ url_for('feed.create') }}",
+                form_mode == 'update' ? webrss.url.feed_update : webrss.url.feed_create,
                 feed_form_data,
                 function (result){
                     if(result.status == 'ok'){
@@ -112,12 +114,13 @@
         $('li.feed i[data-feed-id].glyphicon-edit', div_channels).click(function(e){
             e.preventDefault();
             e.stopPropagation();
+
             var self = $(this),
                 feed_id = self.data('feed-id');
 
             feed_modal_title.html('Edit feed');
 
-            $.getJSON('/api/feed/update', {pk: feed_id}, function(data){
+            $.getJSON(webrss.url.feed_update, {pk: feed_id}, function(data){
                 feed_form_url.val(data.url);
                 feed_form_category.val(data.category);
                 feed_form.data('feed-id', feed_id);
@@ -130,6 +133,7 @@
         $('li.feed i[data-feed-id].glyphicon-trash', div_channels).click(function(e){
             e.preventDefault();
             e.stopPropagation();
+
             var self = $(this),
                 feed_id = self.data('feed-id');
 
@@ -144,7 +148,7 @@
             var self = $(this),
                 feed_id = self.data('feed-id');
 
-            $.post("{{ url_for('feed.delete') }}", {pk: feed_id}, function(result){
+            $.post(webrss.url.feed_delete, {pk: feed_id}, function(result){
                 if(result.status == 'ok'){
                     location.reload(true);
                 }else{

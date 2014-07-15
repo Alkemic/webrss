@@ -1,4 +1,22 @@
-<div class="modal fade" id="add-category" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" id="delete-category" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title">Confirm deletion</h4>
+            </div>
+            <div class="modal-body">
+                <p>Do you want to delete "<span class="item-to-delete-name"></span>"?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="reset" class="btn btn-default" data-dismiss="modal"><i class="glyphicon glyphicon-remove"></i> Close</button>
+                <button type="submit" class="btn btn-primary"><i class="glyphicon glyphicon-trash"></i> Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="category-form" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-mode="add">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -24,25 +42,96 @@
 
 <script>
     $(document).ready(function(){
-        var create_category = $('div#add-category form');
+        var div_channels = $('div#channels'),
+            category_create_button = $('button#category-form-create'),
+            category_modal = $('div#category-form'),
+            category_modal_title = $('.modal-title', category_modal),
+            category_form = $('form', category_modal),
+            category_form_name = $('input#category-name', category_modal),
+            category_delete_modal = $('div#delete-category'),
+            category_delete_modal_submit = $('button[type=submit]', category_delete_modal);
 
-        create_category.submit(function(e){
+
+        // opening create category modal
+        category_create_button.click(function(e){
+            e.preventDefault();
+            e.stopPropagation();
+
+            category_form.data('mode', 'create').data('feed-id', null);
+            category_form_name.val('');
+            category_modal_title.html('Add category');
+            category_modal.modal();
+        });
+
+        // creating category
+        category_form.submit(function(e){
             e.preventDefault();
 
+            var category_form_data = category_form.serialize(),
+                form_mode = category_form.data('mode');
+
+            if(form_mode == 'update') // append pk if updating
+                category_form_data += '&pk=' + category_form.data('category-id');
+
             $.post(
-                "{{ url_for('category.create') }}",
-                create_category.serializeArray(),
+                form_mode == 'update' ? webrss.url.category_update : webrss.url.category_create,
+                category_form_data,
                 function (result){
                     if(result.status == 'ok'){
                         location.reload(true);
                     }else{
-                        alert('An error occured.');
+                        alert('An error occurred.');
                     }
                 },
                 'json'
             );
         });
 
+        // add/editing category
+        $('h4 .glyphicon-edit', div_channels).click(function(e){
+            e.preventDefault();
+            e.stopPropagation();
+
+            var self = $(this),
+                pk = self.data('category-id');
+
+            category_modal_title.html('Edit category');
+
+            $.getJSON(webrss.url.category_update, {pk: pk}, function(data){
+                category_form_name.val(data.name);
+                category_form.data('category-id', pk);
+                category_form.data('mode', 'update');
+                category_modal.modal();
+            });
+        });
+
+        // deleting a category: oening modal
+        $('h4 .glyphicon-trash', div_channels).click(function(e){
+            e.preventDefault();
+            e.stopPropagation();
+
+            var self = $(this),
+                category_id = self.data('category-id');
+
+            category_delete_modal_submit.data('category-id', category_id);
+            $('span.item-to-delete-name', category_delete_modal).html($('h4[data-category-id='+category_id+']').attr('title'));
+            category_delete_modal.modal();
+        });
+
+        // confirming category deletion
+        category_delete_modal_submit.click(function(e){
+            e.preventDefault();
+            var self = $(this),
+                pk = self.data('category-id');
+
+            $.post(webrss.url.category_delete, {pk: pk}, function(result){
+                if(result.status == 'ok'){
+                    location.reload(true);
+                }else{
+                    alert(result.message);
+                }
+            });
+        });
 
     });
 </script>

@@ -51,7 +51,7 @@
                     <ul class="nav navbar-nav">
                         <!--<li><a href="/">Add</a></li>-->
 
-                        <li><button class="btn btn-primary btn-sl" data-toggle="modal" data-target="#add-category"><i class="glyphicon glyphicon-plus"></i> Add category</button></li>
+                        <li><button class="btn btn-primary btn-sl" id="category-form-create"><i class="glyphicon glyphicon-plus"></i> Add category</button></li>
                         <li><button class="btn btn-primary btn-sl" id="feed-form-create"><i class="glyphicon glyphicon-plus"></i> Add feed</button></li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
@@ -68,20 +68,12 @@
         <div class="row" id="rss">
             <div class="col-md-3" id="channels">
                 {% for category in categories %}
-                <h4>
+                <h4 data-category-id="{{ category.id }}" title="{{ category.title }}">
                     {{ category.title }}
-                    <!--<span class="pull-right">-->
-                        <!--<div class="dropdown">-->
-                            <!--<a data-toggle="dropdown" href="#" class="glyphicon glyphicon-cog" data-category-id="{{ category.id }}"></a>-->
-                            <!--<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">-->
-                                <!--<li><i class="glyphicon glyphicon-plus" data-category-id="{{ category.id }}"></i> Add in this category</li>-->
-                            <!--</ul>-->
-                        <!--</div>-->
-                    <!--</span>-->
-
                     <span class="pull-right">
-                        <!--<i href="#" class="glyphicon glyphicon-trash pointer" data-category-id="{{ category.id }}" title="Delete this category"></i>-->
                         <i class="glyphicon glyphicon-plus pointer" data-category-id="{{ category.id }}" title="Add feed in this category"></i>
+                        <i class="glyphicon glyphicon-edit pointer" data-category-id="{{ category.id }}" title="Edit this category"></i>
+                        <i class="glyphicon glyphicon-trash pointer" data-category-id="{{ category.id }}" title="Delete this category"></i>
                     </span>
                 </h4>
                 <ul class="nav nav-pills nav-stacked resource-list">
