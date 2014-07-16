@@ -75,10 +75,65 @@ def delete():
         return {'status': 'fail', 'message': 'Entry doesn\'t exists'}
 
     entry.deleted_at = datetime.now()
-    print entry
+
     try:
         entry.save()
     except DatabaseError:
         return {'status': 'fail', 'message': 'Exception occurred during deleting'}
+
+    return {'status': 'ok'}
+
+
+@app.route('/api/category/move_up', endpoint='category.move_up', methods=['POST'])
+@jsonify
+def move_up():
+    """
+    Move category up
+    """
+    try:
+        pk = int(request.form['pk'])
+        entry = Category.get(Category.id == pk)
+        """:type : Category """
+    except ValueError:
+        return {'status': 'fail', 'message': 'Wrong parameter'}
+    except DoesNotExist:
+        return {'status': 'fail', 'message': 'Entry doesn\'t exists'}
+
+    prev = entry.prev_by_order()
+
+    if not prev:
+        return {'status': 'ok', 'message': 'First element'}
+
+    prev.order, entry.order = entry.order, prev.order
+
+    entry.save()
+    prev.save()
+
+    return {'status': 'ok'}
+
+@app.route('/api/category/move_down', endpoint='category.move_down', methods=['POST'])
+@jsonify
+def move_down():
+    """
+    Move category down
+    """
+    try:
+        pk = int(request.form['pk'])
+        entry = Category.get(Category.id == pk)
+        """:type : Category """
+    except ValueError:
+        return {'status': 'fail', 'message': 'Wrong parameter'}
+    except DoesNotExist:
+        return {'status': 'fail', 'message': 'Entry doesn\'t exists'}
+
+    prev = entry.next_by_order()
+
+    if not prev:
+        return {'status': 'ok', 'message': 'Last element'}
+
+    prev.order, entry.order = entry.order, prev.order
+
+    entry.save()
+    prev.save()
 
     return {'status': 'ok'}

@@ -20,6 +20,8 @@
         webrss.url.category_create = "{{ url_for('category.create') }}";
         webrss.url.category_update = "{{ url_for('category.update') }}";
         webrss.url.category_delete = "{{ url_for('category.delete') }}";
+        webrss.url.category_move_up = "{{ url_for('category.move_up') }}";
+        webrss.url.category_move_down = "{{ url_for('category.move_down') }}";
 
         webrss.url.entry_fetch = "{{ url_for('entry.fetch') }}";
     </script>
@@ -71,6 +73,8 @@
                 <h4 data-category-id="{{ category.id }}" title="{{ category.title }}">
                     {{ category.title }}
                     <span class="pull-right">
+                        <i class="glyphicon glyphicon-arrow-up pointer" data-category-id="{{ category.id }}" title="Move this category up"></i>
+                        <i class="glyphicon glyphicon-arrow-down pointer" data-category-id="{{ category.id }}" title="Move this category down"></i>
                         <i class="glyphicon glyphicon-plus pointer" data-category-id="{{ category.id }}" title="Add feed in this category"></i>
                         <i class="glyphicon glyphicon-edit pointer" data-category-id="{{ category.id }}" title="Edit this category"></i>
                         <i class="glyphicon glyphicon-trash pointer" data-category-id="{{ category.id }}" title="Delete this category"></i>

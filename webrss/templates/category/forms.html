@@ -87,6 +87,40 @@
             );
         });
 
+        // moving up category
+        $('h4 .glyphicon-arrow-up', div_channels).click(function(e){
+            e.preventDefault();
+            e.stopPropagation();
+
+            var self = $(this),
+                pk = self.data('category-id');
+
+            $.post(webrss.url.category_move_up, {pk: pk}, function(data){
+                if(data.status == 'ok'){
+                    location.reload(true);
+                }else{
+                    alert('An error occurred.');
+                }
+            }, 'json');
+        });
+
+        // moving down category
+        $('h4 .glyphicon-arrow-down', div_channels).click(function(e){
+            e.preventDefault();
+            e.stopPropagation();
+
+            var self = $(this),
+                pk = self.data('category-id');
+
+            $.post(webrss.url.category_move_down, {pk: pk}, function(data){
+                if(data.status == 'ok'){
+                    location.reload(true);
+                }else{
+                    alert('An error occurred.');
+                }
+            }, 'json');
+        });
+
         // add/editing category
         $('h4 .glyphicon-edit', div_channels).click(function(e){
             e.preventDefault();

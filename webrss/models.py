@@ -31,7 +31,36 @@ class Category(BaseModel):
         return self.__unicode__()
 
     def not_deleted_feeds(self):
+        """
+        :rtype : list[Feed]
+        """
         return self.feed_set.where(Feed.deleted_at == None)
+
+    def prev_by_order(self):
+        """
+        :rtype : Category
+        """
+        try:
+            return Category.select() \
+                .where(Category.order < self.order) \
+                .where(Category.deleted_at == None) \
+                .order_by(Category.order.desc()) \
+                .limit(1)[0]
+        except IndexError:
+            return None
+
+    def next_by_order(self):
+        """
+        :rtype : Category
+        """
+        try:
+            return Category.select() \
+                .where(Category.order > self.order) \
+                .where(Category.deleted_at == None) \
+                .order_by(Category.order.asc()) \
+                .limit(1)[0]
+        except IndexError:
+            return None
 
 
 class Feed(BaseModel):
