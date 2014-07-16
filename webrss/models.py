@@ -79,7 +79,7 @@ class Feed(BaseModel):
     deleted_at = peewee.DateTimeField(null=True)
 
     class Meta:
-        order_by = ('-created_at',)
+        order_by = ('-feed_title',)
 
     def __unicode__(self):
         return self.feed_title
