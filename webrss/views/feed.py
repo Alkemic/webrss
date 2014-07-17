@@ -60,8 +60,6 @@ def update():
     """
     is_get = request.method == 'GET'
     pk = request.args.get('pk', None) if is_get else request.form.get('pk', None)
-    print request.args
-    print request.form
 
     if pk is None:
         return {'status': 'fail', 'message': 'Wrong parameter'}
