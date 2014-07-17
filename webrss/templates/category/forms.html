@@ -1,4 +1,4 @@
-<div class="modal fade" id="delete-category" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal" id="delete-category" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -16,7 +16,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="category-form" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-mode="add">
+<div class="modal" id="category-form" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-mode="add">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -61,6 +61,7 @@
             category_form_name.val('');
             category_modal_title.html('Add category');
             category_modal.modal();
+            category_form_name.focus();
         });
 
         // creating category
@@ -136,6 +137,7 @@
                 category_form.data('category-id', pk);
                 category_form.data('mode', 'update');
                 category_modal.modal();
+                category_form_name.focus();
             });
         });
 

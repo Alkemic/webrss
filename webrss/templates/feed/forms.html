@@ -1,4 +1,4 @@
-<div class="modal fade" id="delete-feed" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal" id="delete-feed" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -16,7 +16,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="feed-form" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-mode="add">
+<div class="modal" id="feed-form" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-mode="add">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -71,6 +71,7 @@
             feed_form.data('mode', 'create').data('feed-id', null);
             feed_modal_title.html('Add feed');
             feed_modal.modal();
+            feed_form_url.focus();
         });
 
         // adding new feed from category level
@@ -85,6 +86,7 @@
             feed_form.data('mode', 'create').data('feed-id', null);
             feed_modal_title.html('Add feed');
             feed_modal.modal();
+            feed_form_url.focus();
         });
 
         // saving/updating feed information
@@ -125,7 +127,8 @@
                 feed_form_category.val(data.category);
                 feed_form.data('feed-id', feed_id);
                 feed_form.data('mode', 'update');
-                feed_modal.modal();
+                feed_modal.modal('show');
+                feed_form_url.focus();
             });
         });
 
