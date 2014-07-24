@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import os.path
-import logging.config
-
+"""
+Run dev server
+"""
 from webrss.main import app
 import webrss.views
 

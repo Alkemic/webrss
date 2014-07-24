@@ -8,7 +8,7 @@
     </thead>
     <tbody>
     {% for entry in entries %}
-    <tr class="row {{ '' if entry.is_read() else 'bold' }}" data-entry-id="{{ entry.id }}" data-feed-id="{{ entry.feed.id }}">
+    <tr class="row {{ '' if entry.is_read else 'bold' }}" data-entry-id="{{ entry.id }}" data-feed-id="{{ entry.feed.id }}">
         <td class="col-md-6">{{ entry.title }}</td>
         <td class="col-md-3">{{ entry.author }}</td>
         <td class="col-md-3">{{ entry.published_at }}</td>

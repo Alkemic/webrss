@@ -1,18 +1,26 @@
 # -*- coding:utf-8 -*-
+"""
+Models used in aplication
+"""
+
 from datetime import datetime
 
 import peewee
 
 
-database = peewee.SqliteDatabase('./webrss.db')
+DATABASE = peewee.SqliteDatabase('./webrss.db')
 
 
 class BaseModel(peewee.Model):
+    """ Base model class """
+
     class Meta:
-        database = database
+        """ Base Meta model """
+        database = DATABASE
 
 
 class Category(BaseModel):
+    """ Model containing all categories """
     title = peewee.CharField(max_length=255)
 
     order = peewee.IntegerField()
@@ -64,6 +72,7 @@ class Category(BaseModel):
 
 
 class Feed(BaseModel):
+    """ Model containing feeds """
     feed_title = peewee.CharField(max_length=255)
     feed_url = peewee.CharField(max_length=255)
     feed_image = peewee.CharField(max_length=255, null=True)
@@ -88,10 +97,14 @@ class Feed(BaseModel):
         return self.__unicode__()
 
     def count_un_read(self):
+        """
+        Returns amount of unread entries
+        """
         return self.entry_set.where(Entry.read_at == None).count()
 
 
 class Entry(BaseModel):
+    """ Model containing entries """
     title = peewee.CharField()
     author = peewee.CharField(null=True)
     summary = peewee.TextField(null=True)
@@ -114,5 +127,7 @@ class Entry(BaseModel):
     def __str__(self):
         return self.__unicode__()
 
+    @property
     def is_read(self):
+        """ Is this entry read? """
         return self.read_at is not None

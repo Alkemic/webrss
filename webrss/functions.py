@@ -1,4 +1,8 @@
 # -*- coding:utf-8 -*-
+"""
+Functions used across application
+"""
+
 from datetime import datetime
 import sys
 import urllib2
@@ -48,14 +52,16 @@ def get_favicon(url):
     request = urllib2.Request(url, headers=headers)
     try:
         content = urllib2.urlopen(request).read()
-        icon_path = lxml.html.fromstring(content).xpath('//link[@rel="icon" or @rel="shortcut icon"]/@href')
+        icon_path = lxml.html\
+            .fromstring(content)\
+            .xpath('//link[@rel="icon" or @rel="shortcut icon"]/@href')
         if icon_path:
             icon_path = icon_path[-1]
             if icon_path[:6] in ('http:/', 'https:', 'ftp://'):
                 return icon_path
             else:
                 return url + icon_path
-    except(urllib2.HTTPError, urllib2.URLError) as e:
+    except(urllib2.HTTPError, urllib2.URLError):
         pass
 
     request = urllib2.Request(url + 'favicon.ico', headers=headers)
@@ -76,8 +82,10 @@ def process_feed(feed):
     parsed = feedparser.parse(feed.feed_url)
 
     feed.feed_title = parsed.feed['title']
-    feed.feed_image = parsed.feed['image'] if 'image' in parsed.feed else None
-    feed.feed_subtitle = parsed.feed['subtitle'] if 'subtitle' in parsed.feed else None
+    if 'image' in parsed.feed:
+        feed.feed_image = parsed.feed['image']
+    if 'subtitle' in parsed.feed:
+        feed.feed_subtitle = parsed.feed['subtitle']
 
     if 'link' in parsed.feed:
         feed.site_url = parsed.feed['link']
@@ -92,8 +100,10 @@ def process_feed(feed):
             feed_entry = Entry(link=entry['link'])
 
         feed_entry.title = entry['title']
-        feed_entry.author = entry['author'] if 'author' in entry else None
-        feed_entry.summary = entry['summary'] if 'summary' in entry else None
+        if 'author' in entry:
+            feed_entry.author = entry['author']
+        if 'summary' in entry:
+            feed_entry.summary = entry['summary']
         feed_entry.link = entry['link']
 
         if 'published_parsed' in entry:

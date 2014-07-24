@@ -1,4 +1,8 @@
 # -*- coding:utf-8 -*-
+"""
+Category related views
+"""
+
 from datetime import datetime
 
 from flask import request
@@ -16,24 +20,41 @@ def index():
     return {'categories': categories_dict()}
 
 
-@app.route('/api/category/create', endpoint='category.create', methods=['POST'])
+@app.route(
+    '/api/category/create',
+    endpoint='category.create',
+    methods=['POST'],
+)
 @jsonify
 def create():
-    order_max = Category.select(fn.Max(Category.order).alias('max_order'))[0].max_order
+    """
+    Create new category
+    """
+    order_max = Category.select(fn.Max(Category.order).alias('max_order'))[
+        0].max_order
     order_max = 0 if order_max is None else order_max
     try:
-        Category.create(title=request.form['category-name'], order=order_max + 1)
+        Category.create(title=request.form['category-name'],
+                        order=order_max + 1)
 
         return {'status': 'ok'}
     except Exception as e:
         return {'status': 'fail'}
 
 
-@app.route('/api/category/update', endpoint='category.update', methods=['POST', 'GET'])
+@app.route(
+    '/api/category/update',
+    endpoint='category.update',
+    methods=['POST', 'GET'],
+)
 @jsonify
 def update():
+    """
+    Update existing category
+    """
     is_get = request.method == 'GET'
-    pk = request.args.get('pk', None) if is_get else request.form.get('pk', None)
+    pk = request.args.get('pk', None) if is_get else request.form.get('pk',
+                                                                      None)
 
     if pk is None:
         return {'status': 'fail', 'message': 'Wrong parameter'}
@@ -56,11 +77,15 @@ def update():
         entry.title = request.form['category-name']
         entry.save()
         return {'status': 'ok'}
-    except Exception as e:  # todo: don't catch'em all.
+    except DatabaseError:
         return {'status': 'fail', 'message': 'Exception occurred during save'}
 
 
-@app.route('/api/category/delete', endpoint='category.delete', methods=['POST'])
+@app.route(
+    '/api/category/delete',
+    endpoint='category.delete',
+    methods=['POST'],
+)
 @jsonify
 def delete():
     """
@@ -79,12 +104,19 @@ def delete():
     try:
         entry.save()
     except DatabaseError:
-        return {'status': 'fail', 'message': 'Exception occurred during deleting'}
+        return {
+            'status': 'fail',
+            'message': 'Exception occurred during deleting'
+        }
 
     return {'status': 'ok'}
 
 
-@app.route('/api/category/move_up', endpoint='category.move_up', methods=['POST'])
+@app.route(
+    '/api/category/move_up',
+    endpoint='category.move_up',
+    methods=['POST'],
+)
 @jsonify
 def move_up():
     """
@@ -111,7 +143,12 @@ def move_up():
 
     return {'status': 'ok'}
 
-@app.route('/api/category/move_down', endpoint='category.move_down', methods=['POST'])
+
+@app.route(
+    '/api/category/move_down',
+    endpoint='category.move_down',
+    methods=['POST'],
+)
 @jsonify
 def move_down():
     """
