@@ -30,15 +30,17 @@ def create():
     """
     Create new category
     """
-    order_max = Category.select(fn.Max(Category.order).alias('max_order'))[
-        0].max_order
+    order_max = Category.select(fn.Max(Category.order)
+                                .alias('max_order'))[0].max_order
     order_max = 0 if order_max is None else order_max
     try:
-        Category.create(title=request.form['category-name'],
-                        order=order_max + 1)
+        Category.create(
+            title=request.form['category-name'],
+            order=order_max + 1,
+        )
 
         return {'status': 'ok'}
-    except Exception as e:
+    except DatabaseError:
         return {'status': 'fail'}
 
 
@@ -53,8 +55,11 @@ def update():
     Update existing category
     """
     is_get = request.method == 'GET'
-    pk = request.args.get('pk', None) if is_get else request.form.get('pk',
-                                                                      None)
+
+    if is_get:
+        pk = request.args.get('pk', None)
+    else:
+        request.form.get('pk', None)
 
     if pk is None:
         return {'status': 'fail', 'message': 'Wrong parameter'}
@@ -138,10 +143,16 @@ def move_up():
 
     prev.order, entry.order = entry.order, prev.order
 
-    entry.save()
-    prev.save()
+    try:
+        entry.save()
+        prev.save()
 
-    return {'status': 'ok'}
+        return {'status': 'ok'}
+    except DatabaseError:
+        return {
+            'status': 'fail',
+            'message': 'Exception occurred during saving'
+        }
 
 
 @app.route(
@@ -170,7 +181,13 @@ def move_down():
 
     prev.order, entry.order = entry.order, prev.order
 
-    entry.save()
-    prev.save()
+    try:
+        entry.save()
+        prev.save()
 
-    return {'status': 'ok'}
+        return {'status': 'ok'}
+    except DatabaseError:
+        return {
+            'status': 'fail',
+            'message': 'Exception occurred during saving'
+        }
