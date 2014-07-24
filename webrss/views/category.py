@@ -30,9 +30,10 @@ def create():
     """
     Create new category
     """
-    order_max = Category.select(fn.Max(Category.order)
-                                .alias('max_order'))[0].max_order
+    order_max_aggr = fn.Max(Category.order).alias('max_order')
+    order_max = Category.select(order_max_aggr)[0].max_order
     order_max = 0 if order_max is None else order_max
+
     try:
         Category.create(
             title=request.form['category-name'],
@@ -59,7 +60,7 @@ def update():
     if is_get:
         pk = request.args.get('pk', None)
     else:
-        request.form.get('pk', None)
+        pk = request.form.get('pk', None)
 
     if pk is None:
         return {'status': 'fail', 'message': 'Wrong parameter'}
