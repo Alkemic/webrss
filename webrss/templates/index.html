@@ -51,15 +51,13 @@
                 </div>
                 <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav">
-                        <!--<li><a href="/">Add</a></li>-->
-
-                        <li><button class="btn btn-primary btn-sl" id="category-form-create"><i class="glyphicon glyphicon-plus"></i> Add category</button></li>
-                        <li><button class="btn btn-primary btn-sl" id="feed-form-create"><i class="glyphicon glyphicon-plus"></i> Add feed</button></li>
+                        <li><button class="btn btn-primary btn-sm" id="category-form-create"><i class="glyphicon glyphicon-plus"></i> Add category</button></li>
+                        <li><button class="btn btn-primary btn-sm" id="feed-form-create"><i class="glyphicon glyphicon-plus"></i> Add feed</button></li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li>
                             <form class="navbar-form navbar-left search" role="search">
-                                <div class="form-group"><input name="phrase" type="text" class="form-control" placeholder="Search" /></div>
+                                <div class="form-group"><input name="phrase" type="text" class="form-control input-sm" placeholder="Search" /></div>
                             </form>
                         </li>
                     </ul>
@@ -82,14 +80,13 @@
                 </h4>
                 <ul class="nav nav-pills nav-stacked resource-list">
                     {% for feed in category.not_deleted_feeds() %}
-                    <li class="feed">
-                        <a href="#" class="feed-link" data-feed-id="{{ feed.id }}"><img class="favicon-url" src="{{ feed.site_favicon_url }}">
+                    <li class="feed" data-feed-id="{{ feed.id }}">
+                        <a data-feed-id="{{ feed.id }}"><img class="favicon-url" src="{{ feed.site_favicon_url }}">
                             <span class="feed-title">{{ feed.feed_title }}</span>
                             <span class="pull-right">
                                 <span class="badge">{{ feed.count_un_read() }}</span>
                                 &nbsp;<i class="glyphicon glyphicon-trash pointer" data-feed-id="{{ feed.id }}" title="Delete this feed"></i>
                                 &nbsp;<i class="glyphicon glyphicon-edit pointer" data-feed-id="{{ feed.id }}" title="Edit this feed"></i>
-                                <!--&nbsp;&nbsp; <i class="glyphicon glyphicon-edit"></i>-->
                             </span>
                         </a>
                     </li>
@@ -119,24 +116,33 @@
             var div_channels = $('div#channels'),
                 entries_list = $('#feeds div#list'),
                 entry_content = $('#feeds div#content'),
-                feed_row = $('tbody tr', entries_list);
+                feed_row = $('tbody tr', entries_list),
+                feeds_list = $('ul li', div_channels);
 
             // loading feed content
-            $('#channels ul li a').click(function(e){
+            feeds_list.click(function(e){
                 e.preventDefault();
-                var feed_id = $(this).data('feed-id');
+                var self = $(this),
+                    feed_id = self.data('feed-id');
+
+                feeds_list.removeClass('active');
+                self.addClass('active');
+
                 $.post(webrss.url.feed_index, {feed_id: feed_id}, function(res){
                     entries_list.html(res);
                 });
             });
 
-            // reading new feed
+            // reading single feed
             entries_list.on('click', 'tr[data-entry-id]', function(e){
                 e.preventDefault();
 
                 var self = $(this),
                     entry_id = self.data('entry-id'),
                     entry_feed_id = self.data('feed-id');
+
+                $('tr[data-entry-id]', entries_list).removeClass('info');
+                self.addClass('info');
 
                 $.post(webrss.url.entry_fetch, {pk: entry_id}, function(content){
                     entry_content.html(content);
