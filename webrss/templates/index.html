@@ -24,6 +24,8 @@
         webrss.url.category_move_down = "{{ url_for('category.move_down') }}";
 
         webrss.url.entry_fetch = "{{ url_for('entry.fetch') }}";
+
+        webrss.url.search = "{{ url_for('search') }}";
     </script>
     <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script>
@@ -56,8 +58,8 @@
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li>
-                            <form class="navbar-form navbar-left search" role="search">
-                                <div class="form-group"><input name="phrase" type="text" class="form-control input-sm" placeholder="Search" /></div>
+                            <form class="navbar-form navbar-left search" role="search" id="search">
+                                <div class="form-group"><input name="phrase" type="text" class="form-control input-sm" placeholder="Search" required /></div>
                             </form>
                         </li>
                     </ul>
@@ -117,7 +119,8 @@
                 entries_list = $('#feeds div#list'),
                 entry_content = $('#feeds div#content'),
                 feed_row = $('tbody tr', entries_list),
-                feeds_list = $('ul li', div_channels);
+                feeds_list = $('ul li', div_channels),
+                search_form = $('form#search');
 
             // loading feed content
             feeds_list.click(function(e){
@@ -152,6 +155,24 @@
                         self.removeClass('bold');
                     }
                 });
+            });
+
+            // submiting search form
+            search_form.submit(function(e){
+                e.preventDefault();
+
+                var self = $(this),
+                    form_data = self.serialize();
+
+                $.post(
+                    webrss.url.search,
+                    form_data,
+                    function(result){
+                        console.log(result);
+                        entries_list.html(result);
+                    }
+                );
+
             });
 
         });

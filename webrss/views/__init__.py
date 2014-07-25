@@ -2,14 +2,14 @@
 """
 Main views
 """
-
 from flask import render_template
+from flask import request
 
 from webrss.main import app
 from . import category
 from . import feed
 from . import entry
-from webrss.models import Category
+from webrss.models import Category, Entry
 
 
 @app.route('/')
@@ -23,9 +23,16 @@ def index():
     return render_template('index.html', categories=categories)
 
 
-@app.route('/api/search')
+@app.route('/api/search', methods=['POST'])
 def search():
     """
     Return search result
     """
-    pass
+    phrase = '%%%s%%' % request.form['phrase']
+
+    entries = Entry.select()\
+        .where((Entry.title ** phrase) | (Entry.summary ** phrase))\
+        .where(Entry.deleted_at == None)
+
+    return render_template('search.html', entries=list(entries))
+

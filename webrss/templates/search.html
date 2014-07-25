@@ -1,0 +1,18 @@
+<table class="table table-hover table-condensed feed-list">
+    <thead>
+    <tr class="row">
+        <th class="col-md-7">Title</th>
+        <th class="col-md-3">Feed</th>
+        <th class="col-md-2">Date</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for entry in entries %}
+    <tr class="row {{ '' if entry.is_read else 'bold' }}" data-entry-id="{{ entry.id }}" data-feed-id="{{ entry.feed.id }}">
+        <td class="col-md-7">{{ entry.title }}</td>
+        <td class="col-md-3">{{ entry.feed }}</td>
+        <td class="col-md-2">{{ entry.published_at }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
