@@ -150,7 +150,7 @@
                 $.post(webrss.url.entry_fetch, {pk: entry_id}, function(content){
                     entry_content.html(content);
                     if(self.hasClass('bold')){
-                        var feed_badge = $('a[data-feed-id='+entry_feed_id+'].feed-link span.badge');
+                        var feed_badge = $('a[data-feed-id='+entry_feed_id+'] span.badge');
                         feed_badge.html(feed_badge.html()-1);
                         self.removeClass('bold');
                     }
