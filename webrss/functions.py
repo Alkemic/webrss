@@ -19,7 +19,7 @@ def categories_dict():
     """
     Returns not deleted categories in a dict
     """
-    entries = Category.select().where(Category.deleted_at == None).dicts()
+    entries = Category.select().where(Category.deleted_at.__eq__(None)).dicts()
 
     return {i: entry for i, entry in enumerate(entries)}
 
@@ -28,7 +28,7 @@ def categories_tuple():
     """
     Returns not deleted categories in a tuple
     """
-    entries = Category.select().where(Category.deleted_at == None).dicts()
+    entries = Category.select().where(Category.deleted_at.__eq__(None)).dicts()
 
     return tuple(entry for i, entry in enumerate(entries))
 

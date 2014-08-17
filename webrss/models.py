@@ -42,7 +42,7 @@ class Category(BaseModel):
         """
         :rtype : list[Feed]
         """
-        return self.feed_set.where(Feed.deleted_at == None)
+        return self.feed_set.where(Feed.deleted_at.__eq__(None))
 
     def prev_by_order(self):
         """
@@ -51,7 +51,7 @@ class Category(BaseModel):
         try:
             return Category.select() \
                 .where(Category.order < self.order) \
-                .where(Category.deleted_at == None) \
+                .where(Category.deleted_at.__eq__(None)) \
                 .order_by(Category.order.desc()) \
                 .limit(1)[0]
         except IndexError:
@@ -64,7 +64,7 @@ class Category(BaseModel):
         try:
             return Category.select() \
                 .where(Category.order > self.order) \
-                .where(Category.deleted_at == None) \
+                .where(Category.deleted_at.__eq__(None)) \
                 .order_by(Category.order.asc()) \
                 .limit(1)[0]
         except IndexError:
@@ -100,7 +100,7 @@ class Feed(BaseModel):
         """
         Returns amount of unread entries
         """
-        return self.entry_set.where(Entry.read_at == None).count()
+        return self.entry_set.where(Entry.read_at.__eq__(None)).count()
 
 
 class Entry(BaseModel):

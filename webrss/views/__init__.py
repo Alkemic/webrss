@@ -17,7 +17,7 @@ def index():
     """
     Index view
     """
-    categories = Category.select().where(Category.deleted_at == None)
+    categories = Category.select().where(Category.deleted_at.__eq__(None))
     categories = list(categories)
 
     return render_template('index.html', categories=categories)
@@ -32,7 +32,6 @@ def search():
 
     entries = Entry.select()\
         .where((Entry.title ** phrase) | (Entry.summary ** phrase))\
-        .where(Entry.deleted_at == None)
+        .where(Entry.deleted_at.__eq__(None))
 
     return render_template('search.html', entries=list(entries))
-

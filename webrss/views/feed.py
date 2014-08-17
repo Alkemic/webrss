@@ -21,7 +21,7 @@ def index():
     Returns list of not deleted categories
     """
     feed = Feed.get(Feed.id == request.form['feed_id'])
-    feeds = list(feed.entry_set.where(Entry.deleted_at == None))
+    feeds = list(feed.entry_set.where(Entry.deleted_at.__eq__(None)))
 
     return render_template('feed/index.html', entries=feeds)
 
