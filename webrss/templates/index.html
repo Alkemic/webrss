@@ -1,49 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="utf-8">
     <title>WebRSS</title>
 
-    <!--<meta name="HandheldFriendly" content="true" />-->
-    <meta name="viewport" content="width=device-width, height=device-height, user-scalable=no, initial-scale=1" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="//netdna.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css" rel="stylesheet" />
-    <link href="//netdna.bootstrapcdn.com/bootstrap/latest/css/bootstrap-theme.min.css" rel="stylesheet" />
     <link href="{{ url_for('static', filename='default.css') }}" rel="stylesheet" />
-    <script>
-        var webrss = webrss || {};
-        webrss.url = webrss.url || {};
-
-        webrss.url.feed_index = "{{ url_for('feed.index') }}";
-        webrss.url.feed_create = "{{ url_for('feed.create') }}";
-        webrss.url.feed_update = "{{ url_for('feed.update') }}";
-        webrss.url.feed_delete = "{{ url_for('feed.delete') }}";
-
-        webrss.url.category_index = "{{ url_for('category.index') }}";
-        webrss.url.category_create = "{{ url_for('category.create') }}";
-        webrss.url.category_update = "{{ url_for('category.update') }}";
-        webrss.url.category_delete = "{{ url_for('category.delete') }}";
-        webrss.url.category_move_up = "{{ url_for('category.move_up') }}";
-        webrss.url.category_move_down = "{{ url_for('category.move_down') }}";
-
-        webrss.url.entry_fetch = "{{ url_for('entry.fetch') }}";
-
-        webrss.url.search = "{{ url_for('search') }}";
-    </script>
     <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7/html5shiv.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/respond.js/1.4.2/respond.js"></script>
     <![endif]-->
 
     <script src="//code.jquery.com/jquery-2.1.0.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/latest/js/bootstrap.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.11/angular.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.12.0/ui-bootstrap-tpls.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.11/angular-sanitize.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.11/angular-resource.min.js"></script>
+
     <script src="{{ url_for('static', filename='main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/controllers.js') }}"></script>
 
-    {% if google_site_verification %}<meta name="google-site-verification" content="{{ google_site_verification }}" />{% endif %}
 </head>
-<body>
-
+{% raw %}
+<body ng-app="webrssApp" ng-controller="RSSCtrl">
     <div id="wrap">
         <header class="navbar navbar-inverse navbar-fixed-top" role="navigation">
             <div class="container">
@@ -64,13 +47,13 @@
                 </div>
                 <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav">
-                        <li><button class="btn btn-primary btn-sm" id="category-form-create"><i class="glyphicon glyphicon-plus"></i> Add category</button></li>
-                        <li><button class="btn btn-primary btn-sm" id="feed-form-create"><i class="glyphicon glyphicon-plus"></i> Add feed</button></li>
+                        <li><button class="btn btn-primary btn-sm" ng-click="createUpdateCategory()"><i class="glyphicon glyphicon-plus"></i> Add category</button></li>
+                        <li><button class="btn btn-primary btn-sm" ng-click="createFeed()"><i class="glyphicon glyphicon-plus"></i> Add feed</button></li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li>
-                            <form class="navbar-form navbar-left search" role="search" id="search">
-                                <div class="form-group"><input name="phrase" type="text" class="form-control input-sm" placeholder="Search" required /></div>
+                            <form class="navbar-form navbar-left search" role="search" id="search" ng-submit="doSearch()">
+                                <div class="form-group"><input name="phrase" type="text" class="form-control input-sm" placeholder="Search" required ng-model="search" /></div>
                             </form>
                         </li>
                     </ul>
@@ -80,42 +63,61 @@
 
         <div class="row row-offcanvas row-offcanvas-left" id="rss">
             <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="channels">
-                {% for category in categories %}
-                <h4 data-category-id="{{ category.id }}" title="{{ category.title }}">
-                    {{ category.title }}
-                    <span class="pull-right">
-                        <i class="glyphicon glyphicon-arrow-up pointer" data-category-id="{{ category.id }}" title="Move this category up"></i>
-                        <i class="glyphicon glyphicon-arrow-down pointer" data-category-id="{{ category.id }}" title="Move this category down"></i>
-                        <i class="glyphicon glyphicon-plus pointer" data-category-id="{{ category.id }}" title="Add feed in this category"></i>
-                        <i class="glyphicon glyphicon-edit pointer" data-category-id="{{ category.id }}" title="Edit this category"></i>
-                        <i class="glyphicon glyphicon-trash pointer" data-category-id="{{ category.id }}" title="Delete this category"></i>
-                    </span>
-                </h4>
-                <ul class="nav nav-pills nav-stacked resource-list">
-                    {% for feed in category.not_deleted_feeds() %}
-                    <li class="feed" data-feed-id="{{ feed.id }}">
-                        <a data-feed-id="{{ feed.id }}"><img class="favicon-url" src="{{ feed.site_favicon_url }}">
-                            <span class="feed-title">{{ feed.feed_title }}</span>
-                            <span class="pull-right">
-                                <span class="badge">{{ feed.count_un_read() }}</span>
-                                &nbsp;<i class="glyphicon glyphicon-trash pointer" data-feed-id="{{ feed.id }}" title="Delete this feed"></i>
-                                &nbsp;<i class="glyphicon glyphicon-edit pointer" data-feed-id="{{ feed.id }}" title="Edit this feed"></i>
-                            </span>
-                        </a>
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% endfor %}
+                <span ng-repeat="category in categories.objects">
+                    <h4 data-category-id="{{ category.id }}" title="{{ category.title }}">
+                        {{ category.title }}
+                        <span class="pull-right">
+                            <i class="glyphicon glyphicon-arrow-up pointer" ng-click="moveUpCategory(category)" title="Move this category up"></i>
+                            <i class="glyphicon glyphicon-arrow-down pointer" ng-click="moveDownCategory(category)" title="Move this category down"></i>
+                            <i class="glyphicon glyphicon-plus pointer" ng-click="createFeed(category)" title="Add feed in this category"></i>
+                            <i class="glyphicon glyphicon-edit pointer" ng-click="createUpdateCategory(category)" title="Edit this category"></i>
+                            <i class="glyphicon glyphicon-trash pointer" ng-click="deleteCategory(category)" title="Delete this category"></i>
+                        </span>
+                    </h4>
+                    <ul class="nav nav-pills nav-stacked resource-list">
+                        <li ng-repeat="feed in category.feeds" class="feed" data-feed-id="{{ feed.id }}" ng-click="loadFeed(feed)" ng-class="{active: feed.active}">
+                            <a data-feed-id="{{ feed.id }}"><img class="favicon-url" src="{{ feed.site_favicon_url }}">
+                                <span class="feed-title">{{ feed.feed_title }}</span>
+                                <span class="pull-right">
+                                    <span class="badge">{{ feed.un_read }}</span>
+                                    &nbsp;<i class="glyphicon glyphicon-trash pointer" ng-click="deleteFeed($event, feed)" title="Delete this feed"></i>
+                                    &nbsp;<i class="glyphicon glyphicon-edit pointer" ng-click="updateFeed($event, feed)" title="Edit this feed"></i>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </span>
             </div>
             <div class="col-xs-12 col-sm-9" id="feeds">
                 <div id="list">
-                    <br/>
-                    <br/>
-                    <br/>
-                    <!--//-->
+                    <table class="table table-hover table-condensed feed-list">
+                        <thead>
+                        <tr class="row">
+                            <th class="col-md-7">Title</th>
+                            <th class="col-md-3">Author</th>
+                            <th class="col-md-2">Date</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr ng-repeat="entry in feedEntries.objects" class="row {{ entry.read_at ? '' : 'bold' }}" ng-class="{active: entry.active}" ng-click="loadEntry(entry, feed)">
+                            <td class="col-md-7">{{ entry.title }}</td>
+                            <td class="col-md-3">{{ entry.author }}</td>
+                            <td class="col-md-2">{{ entry.published_at }}</td>
+                        </tr>
+                        <tr ng-show="feedEntries.meta.next">
+                            <td colspan="4" class="text-center">
+                                <span class="read-feed btn btn-default" ng-click="loadMore(feedEntries.meta.next)">Load more</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
                 <div id="content">
-                    <!--//-->
+                    <section class="rss-entry container" ng-show="feedEntry">
+                        <header class="page-header">{{ feedEntry.title }}</header>
+                        <article ng-bind-html="safe(feedEntry.summary)"></article>
+                        <footer><a target="_blank" href="{{ feedEntry.link }}">Read</a></footer>
+                    </section>
                 </div>
             </div>
         </div>
@@ -123,86 +125,154 @@
         <footer id="footer">&copy; 2014 <a href="http://danielczuba.pl" title="Daniel Alkemic Czuba">Daniel Czuba</a></footer>
 
     </div><!-- /#wrap -->
+    <script type="text/ng-template" id="category_create.html">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">Add category</h4>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-danger alert-dismissible" role="alert" ng-show="error">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                {{ error }}
+            </div>
 
-    {% include 'category/forms.html' with context %}
-    {% include 'feed/forms.html' with context %}
+            <div class="form-group">
+                <label for="category-name">Category name</label>
+                <input type="text" class="form-control" id="category-name" ng-model="category.title" placeholder="Enter name" required="">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="reset" class="btn btn-default" data-dismiss="modal" ng-click="cancel()">
+                <i class="glyphicon glyphicon-remove"></i> Close
+            </button>
+            <button type="submit" class="btn btn-primary" ng-click="save()">
+                <i class="glyphicon glyphicon-save"></i> Save
+            </button>
+        </div>
+    </script>
 
-    <script>
-        $(document).ready(function(){
-            if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
-                $('#wrap').css('height', $(window).height())
-                    .css('width', $(window).width());
-            }
+    <script type="text/ng-template" id="category_delete.html">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">Delete category</h4>
+        </div>
+            <div class="alert alert-danger alert-dismissible" role="alert" ng-show="error">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                {{ error }}
+            </div>
 
-            var div_channels = $('div#channels'),
-                entries_list = $('#feeds div#list'),
-                entry_content = $('#feeds div#content'),
-                feed_row = $('tbody tr', entries_list),
-                feeds_list = $('ul li', div_channels),
-                search_form = $('form#search');
+        <div class="modal-body">
+            <div class="form-group">
+                Do you really want to delete category "{{ category.title }}"?
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="reset" class="btn btn-default" data-dismiss="modal" ng-click="cancel()">
+                <i class="glyphicon glyphicon-remove"></i> Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" ng-click="ok()">
+                <i class="glyphicon glyphicon-ok"></i> OK
+            </button>
+        </div>
+    </script>
 
-            // loading feed content
-            var load_feed_list = function(e){
-                e.preventDefault();
-                var self = $(this),
-                    feed_id = self.data('feed-id'),
-                    page = self.data('page');
+    <script type="text/ng-template" id="feed_create.html">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">Add feed</h4>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-danger alert-dismissible" role="alert" ng-show="error">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                {{ error }}
+            </div>
 
-                if(page == undefined)
-                    page = 1;
+            <div class="form-group">
+                <label for="url">Feed url</label>
+                <input type="url" class="form-control" id="url" placeholder="Enter url" required="required" ng-model="form.feed_url">
+            </div>
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select class="form-control" id="category" placeholder="Select category" required="required" ng-model="form.category">
+                    <option ng-repeat="category in categories" value="{{ category.id }}" ng-selected="form.category == category.id">{{ category.title }}</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="reset" class="btn btn-default" data-dismiss="modal" ng-click="cancel()">
+                <i class="glyphicon glyphicon-remove"></i> Close
+            </button>
+            <button type="submit" class="btn btn-primary" ng-click="save()">
+                <i class="glyphicon glyphicon-save"></i> Save
+            </button>
+        </div>
+    </script>
 
-                feeds_list.removeClass('active');
-                self.addClass('active');
+    <script type="text/ng-template" id="feed_update.html">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">Add feed</h4>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-danger alert-dismissible" role="alert" ng-show="error">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                {{ error }}
+            </div>
 
-                $.post(webrss.url.feed_index, {feed_id: feed_id, page: page}, function(res){
-                    entries_list.html(res);
-                });
-            };
+            <div class="form-group">
+                <label for="url">Feed title</label>
+                <input type="text" class="form-control" id="feed_title" placeholder="Enter feed title" required="required" ng-model="form.feed_title">
+            </div>
+            <div class="form-group">
+                <label for="site_favicon_url">Feed favicon</label>
+                <input type="url" class="form-control" id="site_favicon_url" placeholder="Enter url" required="required" ng-model="form.site_favicon_url">
+            </div>
+            <div class="form-group">
+                <label for="url">Feed url</label>
+                <input type="url" class="form-control" id="url" placeholder="Enter url" required="required" ng-model="form.feed_url">
+            </div>
+            <div class="form-group">
+                <label for="category">Category</label>
+                <select class="form-control" id="category" placeholder="Select category" required="required" ng-model="form.category">
+                    <option ng-repeat="category in categories" value="{{ category.id }}" ng-selected="form.category == category.id">{{ category.title }}</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="reset" class="btn btn-default" data-dismiss="modal" ng-click="cancel()">
+                <i class="glyphicon glyphicon-remove"></i> Close
+            </button>
+            <button type="submit" class="btn btn-primary" ng-click="save()">
+                <i class="glyphicon glyphicon-save"></i> Save
+            </button>
+        </div>
+    </script>
 
-            feeds_list.click(load_feed_list);
-            entries_list.on('click', 'span[data-feed-id].read-feed', load_feed_list);
+    <script type="text/ng-template" id="feed_delete.html">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">Delete feed</h4>
+        </div>
+        <div class="modal-body">
+            <div class="alert alert-danger alert-dismissible" role="alert" ng-show="error">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                {{ error }}
+            </div>
 
-            // reading single feed
-            entries_list.on('click', 'tr[data-entry-id]', function(e){
-                e.preventDefault();
-
-                var self = $(this),
-                    entry_id = self.data('entry-id'),
-                    entry_feed_id = self.data('feed-id');
-
-                $('tr[data-entry-id]', entries_list).removeClass('info');
-                self.addClass('info');
-
-                $.post(webrss.url.entry_fetch, {pk: entry_id}, function(content){
-                    entry_content.html(content);
-                    if(self.hasClass('bold')){
-                        var feed_badge = $('a[data-feed-id='+entry_feed_id+'] span.badge');
-                        feed_badge.html(feed_badge.html()-1);
-                        self.removeClass('bold');
-                    }
-                });
-            });
-
-            // submiting search form
-            search_form.submit(function(e){
-                e.preventDefault();
-
-                var self = $(this),
-                    form_data = self.serialize();
-
-                $.post(
-                    webrss.url.search,
-                    form_data,
-                    function(result){
-                        console.log(result);
-                        entries_list.html(result);
-                    }
-                );
-
-            });
-
-        });
+            <div class="form-group">
+                Do you really want to delete feed "{{ feed.feed_title }}"?
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="reset" class="btn btn-default" data-dismiss="modal" ng-click="cancel()">
+                <i class="glyphicon glyphicon-remove"></i> Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" ng-click="ok()">
+                <i class="glyphicon glyphicon-ok"></i> OK
+            </button>
+        </div>
     </script>
 
 </body>
 </html>
+{% endraw %}
