@@ -1,12 +1,10 @@
 # -*- coding:utf-8 -*-
-"""
-Models used in aplication
-"""
-
+"""Models used in aplication"""
 from datetime import datetime
 
+import feedparser
+from flask import request
 import peewee
-
 
 DATABASE = peewee.SqliteDatabase('./webrss.db')
 
@@ -70,6 +68,24 @@ class Category(BaseModel):
         except IndexError:
             return None
 
+    def save(self, force_insert=False, only=None):
+        if not self.id and not self.order:
+            order_max_aggr = peewee.fn.Max(Category.order).alias('max_order')
+            order_max = Category.select(order_max_aggr)[0].max_order
+            order_max = 0 if order_max is None else order_max
+            self.order = order_max
+
+        return super(Category, self).save(force_insert, only)
+
+    def delete_instance(self, recursive=False, delete_nullable=False):
+        self.deleted_at = datetime.now()
+        self.save()
+
+    @classmethod
+    def select(cls, *selection):
+        select = super(Category, cls).select(*selection)
+        return select.where(cls.deleted_at.__eq__(None))
+
 
 class Feed(BaseModel):
     """ Model containing feeds """
@@ -101,6 +117,15 @@ class Feed(BaseModel):
         Returns amount of unread entries
         """
         return self.entry_set.where(Entry.read_at.__eq__(None)).count()
+
+    def delete_instance(self, recursive=False, delete_nullable=False):
+        self.deleted_at = datetime.now()
+        self.save()
+
+    @classmethod
+    def select(cls, *selection):
+        select = super(Feed, cls).select(*selection)
+        return select.where(cls.deleted_at.__eq__(None))
 
 
 class Entry(BaseModel):
