@@ -2,8 +2,11 @@
 """
 Main views
 """
+import os
+
 from flask import render_template
 from flask import request
+from flask import send_from_directory
 
 from webrss.main import app
 from . import category
@@ -35,3 +38,12 @@ def search():
         .where(Entry.deleted_at.__eq__(None))
 
     return render_template('search.html', entries=list(entries))
+
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(
+        os.path.join(app.root_path, 'static'),
+        'favicon.ico',
+        mimetype='image/png'
+    )
