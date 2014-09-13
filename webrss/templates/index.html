@@ -123,18 +123,25 @@
                 search_form = $('form#search');
 
             // loading feed content
-            feeds_list.click(function(e){
+            var load_feed_list = function(e){
                 e.preventDefault();
                 var self = $(this),
-                    feed_id = self.data('feed-id');
+                    feed_id = self.data('feed-id'),
+                    page = self.data('page');
+
+                if(page == undefined)
+                    page = 1;
 
                 feeds_list.removeClass('active');
                 self.addClass('active');
 
-                $.post(webrss.url.feed_index, {feed_id: feed_id}, function(res){
+                $.post(webrss.url.feed_index, {feed_id: feed_id, page: page}, function(res){
                     entries_list.html(res);
                 });
-            });
+            };
+
+            feeds_list.click(load_feed_list);
+            entries_list.on('click', 'span[data-feed-id].read-feed', load_feed_list);
 
             // reading single feed
             entries_list.on('click', 'tr[data-entry-id]', function(e){

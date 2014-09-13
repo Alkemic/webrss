@@ -14,5 +14,10 @@
         <td class="col-md-2">{{ entry.published_at }}</td>
     </tr>
     {% endfor %}
+    <tr>
+        <td colspan="4" class="text-center">
+            <span data-page="{{ page }}" class="read-feed btn btn-default" data-feed-id="{{ feed_id }}">Load more</span>
+        </td>
+    </tr>
     </tbody>
 </table>

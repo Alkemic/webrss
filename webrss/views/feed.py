@@ -20,10 +20,20 @@ def index():
     """
     Returns list of not deleted categories
     """
-    feed = Feed.get(Feed.id == request.form['feed_id'])
-    feeds = list(feed.entry_set.where(Entry.deleted_at.__eq__(None)))
+    try:
+        page = int(request.form.get('page', 1))
+    except (TypeError, ValueError):
+        page = 1
 
-    return render_template('feed/index.html', entries=feeds)
+    feed_id = request.form.get('feed_id')
+
+    feed = Feed.get(Feed.id == feed_id)
+
+    entries = feed.entry_set.where(Entry.deleted_at.__eq__(None))\
+        .limit(page*100)
+
+    return render_template('feed/index.html', entries=list(entries), page=page,
+                           feed_id=feed_id)
 
 
 @app.route('/api/feed/create', endpoint='feed.create', methods=['POST'])
