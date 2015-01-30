@@ -1,14 +1,15 @@
 # -*- coding:utf-8 -*-
-"""
-webrss.main
-"""
+"""webrss.main"""
 from flask import Flask
 from flask import g
+from flask_peewee.rest import RestAPI
 
 from webrss.models import DATABASE
 
 
 app = Flask(__name__)
+
+rest_api = RestAPI(app)
 
 
 @app.before_request
