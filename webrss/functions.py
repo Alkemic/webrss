@@ -81,18 +81,6 @@ def process_feed(feed):
     """
     parsed = feedparser.parse(feed.feed_url)
 
-    feed.feed_title = parsed.feed['title']
-    if 'image' in parsed.feed:
-        feed.feed_image = parsed.feed['image']
-    if 'subtitle' in parsed.feed:
-        feed.feed_subtitle = parsed.feed['subtitle']
-
-    if 'link' in parsed.feed:
-        feed.site_url = parsed.feed['link']
-        feed.site_favicon_url = get_favicon(parsed.feed['link'])
-
-    feed.save()
-
     for entry in parsed.entries:
         try:
             feed_entry = Entry.get(Entry.link == entry['link'])
