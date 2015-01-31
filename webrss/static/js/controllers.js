@@ -1,9 +1,9 @@
-'use strict';
-
 App.controller("RSSCtrl", function ($scope, $http, $sce, $modal) {
+    'use strict';
     $scope.feedEntries = [];
     $scope.categories = [];
-    $scope.test = 'asd';
+    $scope.currentFeed = null;
+    $scope.currentEntry = null;
 
     $scope.createUpdateCategory = function (category) {
         $modal.open({
@@ -94,17 +94,13 @@ App.controller("RSSCtrl", function ($scope, $http, $sce, $modal) {
     $scope.loadCategories();
 
     $scope.loadFeed = function (feed) {
-        _.each($scope.categories.objects, function (category) {
-            _.each(category.feeds, function (feed) {
-                feed.active = false;
-            });
-        });
-        feed.active = true;
         feed.new_entries = false;
 
         $http.get('/api/entry/?feed=' + feed.id)
             .then(function (res) {
                 $scope.feedEntries = res.data;
+                $scope.currentFeed = feed.id;
+                $scope.currentEntry = null;
             });
     };
 
@@ -119,14 +115,10 @@ App.controller("RSSCtrl", function ($scope, $http, $sce, $modal) {
     };
 
     $scope.loadEntry = function (entry) {
-        _.each($scope.feedEntries.objects, function (entry) {
-            entry.active = false;
-        });
-        entry.active = true;
-
         $http.get('/api/entry/' + entry.id)
             .then(function (res) {
                 $scope.feedEntry = res.data;
+                $scope.currentEntry = res.data.id;
 
                 var feeds = [];
                 _.forEach($scope.categories.objects, function (category) {
@@ -145,19 +137,16 @@ App.controller("RSSCtrl", function ($scope, $http, $sce, $modal) {
     $scope.safe = $sce.trustAsHtml;
 
     $scope.doSearch = function () {
-        _.each($scope.categories.objects, function (category) {
-            _.each(category.feeds, function (feed) {
-                feed.active = false;
-            });
-        });
-
         $http.get('/api/entry/?title__ilike=%' + $scope.search + '%')
             .then(function (res) {
                 $scope.feedEntries = res.data;
+                $scope.currentFeed = null;
+                $scope.currentEntry = null;
             });
 
     };
 }).controller("RSSAddEditCategoryCtrl", function ($scope, $modalInstance, $http, category, parentScope) {
+    'use strict';
     $scope.category = category;
     $scope.save = function () {
         var method;
@@ -178,6 +167,7 @@ App.controller("RSSCtrl", function ($scope, $http, $sce, $modal) {
         $modalInstance.dismiss();
     };
 }).controller("RSSCreateFeedCtrl", function ($scope, $modalInstance, $http, category, parentScope) {
+    'use strict';
     $scope.form = {feed_url: '', category: ''};
 
     if(category !== undefined && category)
@@ -199,10 +189,10 @@ App.controller("RSSCtrl", function ($scope, $http, $sce, $modal) {
         $modalInstance.dismiss();
     };
 }).controller('RSSUpdateFeedCtrl', function ($scope, $modalInstance, $http, feed, parentScope) {
+    'use strict';
     $scope.form = angular.copy(feed);
     $scope.form.category = $scope.form.category.toString();
     delete $scope.form.un_read;
-    delete $scope.form.active;
     delete $scope.form.new_entries;
 
     $scope.categories = parentScope.categories.objects;
@@ -221,6 +211,7 @@ App.controller("RSSCtrl", function ($scope, $http, $sce, $modal) {
         $modalInstance.dismiss();
     };
 }).controller("RSSDeleteCategoryCtrl", function ($scope, $modalInstance, $http, category, parentScope) {
+    'use strict';
     $scope.category = category;
     $scope.ok = function () {
         $http.delete('/api/category/' + category.id + '/')
@@ -234,6 +225,7 @@ App.controller("RSSCtrl", function ($scope, $http, $sce, $modal) {
 
     $scope.cancel = function () { $modalInstance.dismiss(); };
 }).controller("RSSDeleteFeedCtrl", function ($scope, $modalInstance, $http, feed, parentScope) {
+    'use strict';
     $scope.feed = feed;
     $scope.ok = function () {
         $http.delete('/api/feed/' + feed.id + '/')

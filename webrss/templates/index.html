@@ -75,7 +75,7 @@
                         </span>
                     </h4>
                     <ul class="nav nav-pills nav-stacked resource-list">
-                        <li ng-repeat="feed in category.feeds" class="feed" data-feed-id="{{ feed.id }}" ng-click="loadFeed(feed)" ng-class="{active: feed.active}">
+                        <li ng-repeat="feed in category.feeds" class="feed" data-feed-id="{{ feed.id }}" ng-click="loadFeed(feed)" ng-class="{active: feed.id == currentFeed}">
                             <a data-feed-id="{{ feed.id }}"><img class="favicon-url" src="{{ feed.site_favicon_url }}">
                                 <span class="feed-title">{{ feed.feed_title }}</span>
                                 <span class="pull-right">
@@ -99,7 +99,7 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr ng-repeat="entry in feedEntries.objects" class="row {{ entry.read_at ? '' : 'bold' }}" ng-class="{active: entry.active}" ng-click="loadEntry(entry, feed)">
+                        <tr ng-repeat="entry in feedEntries.objects" class="row {{ entry.read_at ? '' : 'bold' }}" ng-class="{active: entry.id == currentEntry}" ng-click="loadEntry(entry, feed)">
                             <td class="col-md-7">{{ entry.title }}</td>
                             <td class="col-md-3">{{ entry.author }}</td>
                             <td class="col-md-2">{{ entry.published_at }}</td>
