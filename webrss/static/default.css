@@ -48,3 +48,5 @@ ul.nav li button{margin-top: 8px; margin-right: 8px;}
 }
 
 .navbar-off-canvas{float: left; padding: 9px 10px; margin-left: 15px;}
+
+.badge.new-entries{ background: #337ab7; }

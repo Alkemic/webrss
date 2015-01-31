@@ -99,6 +99,7 @@ class Feed(BaseModel):
 
     category = peewee.ForeignKeyField(Category, null=True)
 
+    last_read_at = peewee.DateTimeField(default=datetime.now())
     created_at = peewee.DateTimeField(default=datetime.now())
     updated_at = peewee.DateTimeField(null=True)
     deleted_at = peewee.DateTimeField(null=True)
@@ -121,6 +122,10 @@ class Feed(BaseModel):
     def delete_instance(self, recursive=False, delete_nullable=False):
         self.deleted_at = datetime.now()
         self.save()
+
+    @property
+    def last_entry(self):
+        return self.entry_set.order_by(Entry.created_at.desc())[0]
 
     @classmethod
     def select(cls, *selection):

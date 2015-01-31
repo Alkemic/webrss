@@ -30,6 +30,7 @@ class CategoryResource(RestResource):
                 'site_favicon_url': feed.site_favicon_url,
                 'category': feed.category.id,
                 'un_read': feed.count_un_read(),
+                'new_entries': feed.last_read_at < feed.last_entry.created_at,
             }
             for feed in obj.not_deleted_feeds()
         ]
@@ -75,6 +76,16 @@ class FeedResource(RestResource):
 class EntryResource(RestResource):
     exclude = ('created_at', 'updated_at', 'deleted_at',)
     include_resources = {'feed': FeedResource}
+
+    def object_list(self):
+        object_list = super(EntryResource, self).object_list()
+
+        if 'feed' in request.args:
+            feed = Feed.get(id=request.args['feed'])
+            feed.last_read_at = datetime.now()
+            feed.save()
+
+        return object_list
 
     def object_detail(self, obj):
         obj.read_at = datetime.now()

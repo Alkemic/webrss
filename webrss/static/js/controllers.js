@@ -88,6 +88,8 @@ App.controller("RSSCtrl", function ($scope, $http, $sce, $modal) {
             .then(function (res) {
                 $scope.categories = res.data;
             });
+
+        setTimeout($scope.loadCategories, 60000);
     };
     $scope.loadCategories();
 
@@ -98,6 +100,7 @@ App.controller("RSSCtrl", function ($scope, $http, $sce, $modal) {
             });
         });
         feed.active = true;
+        feed.new_entries = false;
 
         $http.get('/api/entry/?feed=' + feed.id)
             .then(function (res) {

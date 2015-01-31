@@ -79,7 +79,7 @@
                             <a data-feed-id="{{ feed.id }}"><img class="favicon-url" src="{{ feed.site_favicon_url }}">
                                 <span class="feed-title">{{ feed.feed_title }}</span>
                                 <span class="pull-right">
-                                    <span class="badge">{{ feed.un_read }}</span>
+                                    <span class="badge" ng-class="{'new-entries': feed.new_entries}">{{ feed.un_read }}</span>
                                     &nbsp;<i class="glyphicon glyphicon-trash pointer" ng-click="deleteFeed($event, feed)" title="Delete this feed"></i>
                                     &nbsp;<i class="glyphicon glyphicon-edit pointer" ng-click="updateFeed($event, feed)" title="Edit this feed"></i>
                                 </span>
