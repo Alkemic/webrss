@@ -203,6 +203,7 @@ App.controller("RSSCtrl", function ($scope, $http, $sce, $modal) {
     $scope.form.category = $scope.form.category.toString();
     delete $scope.form.un_read;
     delete $scope.form.active;
+    delete $scope.form.new_entries;
 
     $scope.categories = parentScope.categories.objects;
 
