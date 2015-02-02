@@ -99,7 +99,7 @@ App.controller("RSSCtrl", function ($scope, $http, $sce, $modal) {
         $http.get('/api/entry/?feed=' + feed.id)
             .then(function (res) {
                 $scope.feedEntries = res.data;
-                $scope.currentFeed = feed.id;
+                $scope.currentFeed = feed;
                 $scope.currentEntry = null;
             });
     };
@@ -115,6 +115,7 @@ App.controller("RSSCtrl", function ($scope, $http, $sce, $modal) {
     };
 
     $scope.loadEntry = function (entry) {
+        entry.new_entry = false;
         $http.get('/api/entry/' + entry.id)
             .then(function (res) {
                 $scope.feedEntry = res.data;
