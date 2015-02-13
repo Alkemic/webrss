@@ -1,6 +1,6 @@
 # WebRSS
 
-Web RSS client written in Python using flask, peewee
+Web RSS client written in Python using Flask, peewee and AngularJS.
 
 ## Installation
 
