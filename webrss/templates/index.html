@@ -23,6 +23,7 @@
     <script src="{{ url_for('static', filename='main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
     <script src="{{ url_for('static', filename='js/controllers.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/directives.js') }}"></script>
 
 </head>
 {% raw %}
@@ -47,13 +48,28 @@
                 </div>
                 <div class="collapse navbar-collapse">
                     <ul class="nav navbar-nav">
-                        <li><button class="btn btn-primary btn-sm" ng-click="createUpdateCategory()"><i class="glyphicon glyphicon-plus"></i> Add category</button></li>
-                        <li><button class="btn btn-primary btn-sm" ng-click="createFeed()"><i class="glyphicon glyphicon-plus"></i> Add feed</button></li>
+                        <li>
+                            <button class="btn btn-primary btn-sm" ng-click="createUpdateCategory()">
+                                <i class="glyphicon glyphicon-plus"></i> Add category
+                            </button>
+                        </li>
+                        <li>
+                            <button class="btn btn-primary btn-sm" ng-click="createFeed()">
+                                <i class="glyphicon glyphicon-plus"></i> Add feed
+                            </button>
+                        </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li>
                             <form class="navbar-form navbar-left search" role="search" id="search" ng-submit="doSearch()">
-                                <div class="form-group"><input name="phrase" type="text" class="form-control input-sm" placeholder="Search" required ng-model="search" /></div>
+                                <div class="form-group">
+                                    <input name="phrase"
+                                           type="text"
+                                           class="form-control input-sm"
+                                           placeholder="Search"
+                                           required
+                                           ng-model="search" />
+                               </div>
                             </form>
                         </li>
                     </ul>
@@ -63,7 +79,7 @@
 
         <div class="row row-offcanvas row-offcanvas-left" id="rss">
             <div class="col-xs-6 col-sm-3 sidebar-offcanvas" id="channels">
-                <span ng-repeat="category in categories.objects">
+                <span ng-repeat="category in feeds.categories.objects">
                     <h4 data-category-id="{{ category.id }}" title="{{ category.title }}">
                         {{ category.title }}
                         <span class="pull-right">
@@ -74,18 +90,11 @@
                             <i class="glyphicon glyphicon-trash pointer" ng-click="deleteCategory(category)" title="Delete this category"></i>
                         </span>
                     </h4>
-                    <ul class="nav nav-pills nav-stacked resource-list">
-                        <li ng-repeat="feed in category.feeds" class="feed" data-feed-id="{{ feed.id }}" ng-click="loadFeed(feed)" ng-class="{active: feed.id == currentFeed.id}">
-                            <a data-feed-id="{{ feed.id }}"><img class="favicon-url" src="{{ feed.site_favicon_url }}">
-                                <span class="feed-title">{{ feed.feed_title }}</span>
-                                <span class="pull-right">
-                                    <span class="badge" ng-class="{'new-entries': feed.new_entries}">{{ feed.un_read }}</span>
-                                    &nbsp;<i class="glyphicon glyphicon-trash pointer" ng-click="deleteFeed($event, feed)" title="Delete this feed"></i>
-                                    &nbsp;<i class="glyphicon glyphicon-edit pointer" ng-click="updateFeed($event, feed)" title="Edit this feed"></i>
-                                </span>
-                            </a>
-                        </li>
-                    </ul>
+                    <feed-select feeds="category.feeds"
+                                 ng-model="feeds.selected"
+                                 update-action="updateFeed"
+                                 delete-action="deleteFeed">
+                    </feed-select>
                 </span>
             </div>
             <div class="col-xs-12 col-sm-9" id="feeds">
@@ -99,30 +108,41 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr ng-repeat="entry in feedEntries.objects" class="row {{ entry.read_at ? '' : 'bold' }}" ng-class="{active: entry.id == currentEntry, info: entry.new_entry}" ng-click="loadEntry(entry, feed)">
+                        <tr ng-repeat="entry in feeds.entries.list.objects"
+                            class="row {{ entry.read_at ? '' : 'bold' }}"
+                            ng-class="{active: entry.id == feeds.entries.current.id, info: entry.new_entry}"
+                            ng-click="feeds.entries.current = entry">
                             <td class="col-md-7">{{ entry.title }}</td>
                             <td class="col-md-3">{{ entry.author }}</td>
                             <td class="col-md-2">{{ entry.published_at }}</td>
                         </tr>
-                        <tr ng-show="feedEntries.meta.next">
+                        <tr ng-show="feeds.entries.list.meta.next">
                             <td colspan="4" class="text-center">
-                                <span class="read-feed btn btn-default" ng-click="loadMore(feedEntries.meta.next)">Load more</span>
+                                <span class="read-feed btn btn-default"
+                                      ng-click="loadMore(feeds.entries.list.meta.next)">
+                                      Load more
+                                </span>
                             </td>
                         </tr>
                         </tbody>
                     </table>
                 </div>
                 <div id="content">
-                    <section class="rss-entry container" ng-show="feedEntry">
-                        <header class="page-header">{{ feedEntry.title }}</header>
-                        <article ng-bind-html="safe(feedEntry.summary)"></article>
-                        <footer><a target="_blank" href="{{ feedEntry.link }}">Read</a></footer>
+                    <section class="rss-entry container" ng-show="feeds.entries.current">
+                        <header class="page-header">{{ feeds.entries.current.title }}</header>
+                        <article ng-bind-html="safe(feeds.entries.current.summary)"></article>
+                        <footer><a target="_blank" href="{{ feeds.entries.current.link }}">Read</a></footer>
                     </section>
                 </div>
             </div>
         </div>
 
-        <footer id="footer">&copy; 2014 <a href="http://danielczuba.pl" title="Daniel Alkemic Czuba">Daniel Czuba</a></footer>
+        <footer id="footer">
+            &copy; 2015
+            <a href="http://danielczuba.pl" title="Daniel Alkemic Czuba">
+                Daniel Czuba
+            </a>
+        </footer>
 
     </div><!-- /#wrap -->
     <script type="text/ng-template" id="category_create.html">
@@ -271,6 +291,33 @@
                 <i class="glyphicon glyphicon-ok"></i> OK
             </button>
         </div>
+    </script>
+
+    <script type="text/ng-template" id="feed-select.html">
+        <ul class="nav nav-pills nav-stacked resource-list">
+            <li ng-repeat="feed in feeds"
+                class="feed"
+                data-feed-id="{{ feed.id }}"
+                ng-class="{active: feed.id == selected.id}"
+                ng-click="doSelect(feed);">
+                <a data-feed-id="{{ feed.id }}">
+                    <img class="favicon-url" src="{{ feed.site_favicon_url }}">
+                    <span class="feed-title">{{ feed.feed_title }}</span>
+                    <span class="pull-right">
+                        <span class="badge"
+                              ng-class="{'new-entries': feed.new_entries}">
+                            {{ feed.un_read }}
+                        </span>
+                        &nbsp;<i class="glyphicon glyphicon-trash pointer"
+                                 ng-click="$event.stopPropagation(); deleteAction(feed);"
+                                 title="Delete this feed"></i>
+                        &nbsp;<i class="glyphicon glyphicon-edit pointer"
+                                 ng-click="$event.stopPropagation(); updateAction(feed);"
+                                 title="Edit this feed"></i>
+                    </span>
+                </a>
+            </li>
+        </ul>
     </script>
 
 </body>
