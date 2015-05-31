@@ -47,7 +47,7 @@ class FeedResource(RestResource):
         return data
 
     def save_object(self, instance, raw_data):
-        if self.pk:
+        if instance.id:
             return super(FeedResource, self).save_object(instance, raw_data)
 
         try:
@@ -69,9 +69,11 @@ class FeedResource(RestResource):
             instance.site_url = feed.feed['link']
             instance.site_favicon_url = get_favicon(feed.feed['link'])
 
+        returned = super(FeedResource, self).save_object(instance, raw_data)
+
         process_feed(instance)
 
-        return super(FeedResource, self).save_object(instance, raw_data)
+        return returned
 
 
 class EntryResource(RestResource):

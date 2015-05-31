@@ -186,7 +186,7 @@ function($scope, $modalInstance, $http, category, parentScope) {
     if (category !== undefined && category)
         $scope.form.category = category.id;
 
-    $scope.feeds.categories = parentScope.categories.objects;
+    $scope.categories = parentScope.feeds.categories.objects;
 
     $scope.save = function() {
         $http.post('/api/feed/', $scope.form)

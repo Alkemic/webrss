@@ -108,7 +108,7 @@ class Feed(BaseModel):
         order_by = ('-feed_title',)
 
     def __unicode__(self):
-        return self.feed_title
+        return "%s" % self.feed_title
 
     def __str__(self):
         return self.__unicode__()
