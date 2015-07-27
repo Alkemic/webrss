@@ -11,7 +11,7 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $modal) {
 
     $scope.createUpdateCategory = function(category) {
         $modal.open({
-            templateUrl: 'category_create.html',
+            templateUrl: 'category_form.html',
             controller: 'RSSAddEditCategoryCtrl',
             size: 'small',
             resolve: {
@@ -154,18 +154,21 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $modal) {
 function($scope, $modalInstance, $http, category, parentScope) {
     'use strict';
     $scope.category = category;
+    $scope.form = angular.copy(category);
+
     $scope.save = function() {
         var method;
-        if (category.id === undefined)
+        if (category.id === undefined) {
             method = $http.post(
                 '/api/category/',
-                {title: $scope.category.title}
+                {title: $scope.form.title}
             );
-        else
+        } else {
             method = $http.post(
                 '/api/category/' + category.id + '/',
-                {title: $scope.category.title}
+                {title: $scope.form.title}
             );
+        }
 
         method.then(function(res) {
             parentScope.loadCategories();
@@ -204,12 +207,13 @@ function($scope, $modalInstance, $http, category, parentScope) {
 }).controller('RSSUpdateFeedCtrl',
 function($scope, $modalInstance, $http, feed, parentScope) {
     'use strict';
+    $scope.feed = feed;
     $scope.form = angular.copy(feed);
     $scope.form.category = $scope.form.category.toString();
     delete $scope.form.un_read;
     delete $scope.form.new_entries;
 
-    $scope.feeds.categories = parentScope.categories.objects;
+     $scope.categories = parentScope.feeds.categories.objects;
 
     $scope.save = function() {
         $http.put('/api/feed/' + feed.id + '/', $scope.form)
