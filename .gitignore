@@ -58,4 +58,4 @@ config.py
 venv
 webrss.db
 .env
-
+uwsgi.yaml
