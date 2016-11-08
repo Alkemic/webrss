@@ -2,11 +2,9 @@
 """Models used in aplication"""
 from datetime import datetime
 
-import feedparser
-from flask import request
 import peewee
 
-DATABASE = peewee.SqliteDatabase('./webrss.db')
+from . import DATABASE
 
 
 class BaseModel(peewee.Model):
@@ -92,7 +90,7 @@ class Feed(BaseModel):
     feed_title = peewee.CharField(max_length=255)
     feed_url = peewee.CharField(max_length=255)
     feed_image = peewee.CharField(max_length=255, null=True)
-    feed_subtitle = peewee.CharField(max_length=255, null=True)
+    feed_subtitle = peewee.TextField(null=True)
 
     site_url = peewee.CharField(max_length=255, null=True)
     site_favicon_url = peewee.CharField(max_length=255, null=True)
@@ -135,7 +133,7 @@ class Feed(BaseModel):
 
 class Entry(BaseModel):
     """ Model containing entries """
-    title = peewee.CharField()
+    title = peewee.CharField(max_length=512)
     author = peewee.CharField(null=True)
     summary = peewee.TextField(null=True)
     link = peewee.CharField()
