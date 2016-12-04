@@ -123,7 +123,7 @@ class Feed(BaseModel):
 
     @property
     def last_entry(self):
-        return self.entry_set.order_by(Entry.created_at.desc())[0]
+        return self.entry_set.order_by(Entry.created_at.desc()).limit(1)[0]
 
     @classmethod
     def select(cls, *selection):
