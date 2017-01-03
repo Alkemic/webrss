@@ -41,7 +41,7 @@ ul.nav li button{margin-top: 8px; margin-right: 8px;}
     .row-offcanvas-right{right: 0;}
     .row-offcanvas-left{left: 0;}
     .row-offcanvas-right .sidebar-offcanvas{ right: -80%;}
-    .row-offcanvas-left .sidebar-offcanvas{left: -80%;}
+    .row-offcanvas-left .sidebar-offcanvas{left: -80%; padding: 50px 5px 5px 5px;}
     .row-offcanvas-right.active{right: 80%;}
     .row-offcanvas-left.active{left: 80%;}
 

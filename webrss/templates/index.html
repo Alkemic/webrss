@@ -300,10 +300,8 @@
                 data-feed-id="{{ feed.id }}"
                 ng-class="{active: feed.id == selected.id}"
                 ng-click="doSelect(feed);">
-                <a data-feed-id="{{ feed.id }}">
-                    <img class="favicon-url" src="{{ feed.site_favicon_url }}">
-                    <span class="feed-title">{{ feed.feed_title }}</span>
-                    <span class="pull-right">
+                <a data-feed-id="{{ feed.id }}" style="display: block;">
+                    <div class="pull-right">
                         <span class="badge"
                               ng-class="{'new-entries': feed.new_entries}">
                             {{ feed.un_read }}
@@ -314,7 +312,11 @@
                         &nbsp;<i class="glyphicon glyphicon-edit pointer"
                                  ng-click="$event.stopPropagation(); updateAction(feed);"
                                  title="Edit this feed"></i>
-                    </span>
+                    </div>
+                    <div style="overflow: hidden; height: 18px;">
+                        <img class="favicon-url" src="{{ feed.site_favicon_url }}">
+                        {{ feed.feed_title }}
+                    </div>
                 </a>
             </li>
         </ul>
