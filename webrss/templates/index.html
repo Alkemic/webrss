@@ -300,7 +300,7 @@
                 data-feed-id="{{ feed.id }}"
                 ng-class="{active: feed.id == selected.id}"
                 ng-click="doSelect(feed);">
-                <a data-feed-id="{{ feed.id }}" style="display: block;">
+                <a data-feed-id="{{ feed.id }}">
                     <div class="pull-right">
                         <span class="badge"
                               ng-class="{'new-entries': feed.new_entries}">
@@ -313,7 +313,7 @@
                                  ng-click="$event.stopPropagation(); updateAction(feed);"
                                  title="Edit this feed"></i>
                     </div>
-                    <div style="overflow: hidden; height: 18px;">
+                    <div class="feed-title">
                         <img class="favicon-url" src="{{ feed.site_favicon_url }}">
                         {{ feed.feed_title }}
                     </div>
