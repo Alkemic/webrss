@@ -8,17 +8,49 @@ from flask import request
 from flask_peewee.rest import RestResource
 import peewee
 
+from . import DATABASE
 from .models import Feed, Category, Entry
 from .main import app, rest_api
 from .decorators import jsonify
 from .functions import get_favicon, process_feed
+
+
+LAST_READ_AT_SQL = """
+select
+    f.id,
+    (
+        select e.published_at
+        from entry e
+        where e.feed_id = f.id
+        order by e.published_at desc
+        limit 1
+    ) entry_last_read_at
+from feed f;
+"""
+
 
 RestResource.paginate_by = 50
 RestResource.authorize = lambda *args, **kwargs: True
 
 
 class CategoryResource(RestResource):
+    _last_read_at = None
+    _last_read = None
+
     exclude = ('created_at', 'updated_at', 'deleted_at',)
+
+    @property
+    def last_read_at(self):
+        _invalidated = (
+            not self._last_read or
+            (datetime.now() - self._last_read_at).seconds > 60
+        )
+        if _invalidated:
+            cursor = DATABASE.execute_sql(LAST_READ_AT_SQL)
+            self._last_read = dict(cursor.fetchall())
+            self._last_read_at = datetime.now()
+
+        return self._last_read
 
     def prepare_data(self, obj, data):
         data['feeds'] = [
@@ -31,7 +63,7 @@ class CategoryResource(RestResource):
                 'category': feed.category.id,
                 'last_read_at': str(feed.last_read_at),
                 'un_read': feed.count_un_read(),
-                'new_entries': feed.last_read_at < feed.last_entry.created_at,
+                'new_entries': feed.last_read_at < self.last_read_at[feed.id],
             }
             for feed in obj.not_deleted_feeds()
         ]
