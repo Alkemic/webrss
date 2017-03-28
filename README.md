@@ -11,6 +11,11 @@ Web RSS client written in Python using Flask, peewee and AngularJS.
 * Add feed collector to crontab ``./scripts/collect_feeds.py``
 * For testing use ``./run.py``
 
+### Using MySQL/MariaDB
+
+* Install client dev packages: ``sudo aptitude install libmysqlclient-dev`` or ``sudo aptitude install libmariadbclient-dev``
+* Install mysql client ``pip install mysqlclient==1.3.10``, at this moment version 1.3.10 is fully working
+
 ## TODO
 
 * Authorisation
