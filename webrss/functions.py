@@ -74,12 +74,12 @@ def get_favicon(url):
     return None
 
 
-def process_feed(feed):
+def process_feed(feed, feed_data=None):
     """
     For given feed
     :type feed: webrss.models.Feed
     """
-    parsed = feedparser.parse(feed.feed_url)
+    parsed = feedparser.parse(feed_data or feed.feed_url)
 
     for entry in parsed.entries:
         try:
