@@ -12,7 +12,8 @@ import feedparser
 import lxml.html
 import peewee
 
-from webrss.models import Category, Entry
+from . import DATABASE
+from .models import Category, Entry
 
 
 def categories_dict():
