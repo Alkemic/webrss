@@ -4,7 +4,7 @@
 Run dev server
 """
 from webrss.main import app
-import webrss.views
+import webrss.views  # noqa
 
 if __name__ == "__main__":
     app.debug = True

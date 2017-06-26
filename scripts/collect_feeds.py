@@ -16,8 +16,8 @@ threads = []
 
 class FeedThread(threading.Thread):
     def __init__(self, feed):
-      threading.Thread.__init__(self)
-      self.feed = feed
+        threading.Thread.__init__(self)
+        self.feed = feed
 
     def run(self):
         try:

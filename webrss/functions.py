@@ -2,17 +2,15 @@
 """
 Functions used across application
 """
-
 from datetime import datetime
 import sys
 import urllib2
 from urlparse import urlparse
-import feedparser
 
+import feedparser
 import lxml.html
 import peewee
 
-from . import DATABASE
 from .models import Category, Entry
 
 
