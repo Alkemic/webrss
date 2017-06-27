@@ -83,7 +83,7 @@
                 </span>
             </div>
             <div class="col-xs-12 col-sm-9" id="feeds">
-                <div id="list">
+                <div id="list" ng-class="{'full-height': !feeds.entries.current}">
                     <table class="table table-hover table-condensed feed-list">
                         <thead>
                         <tr class="row">
@@ -112,8 +112,8 @@
                         </tbody>
                     </table>
                 </div>
-                <div id="content">
-                    <section class="rss-entry container" ng-show="feeds.entries.current">
+                <div id="content" ng-show="feeds.entries.current">
+                    <section class="rss-entry container">
                         <header class="page-header">{{ feeds.entries.current.title }}</header>
                         <article ng-bind-html="safe(feeds.entries.current.summary)"></article>
                         <footer><a target="_blank" href="{{ feeds.entries.current.link }}">Read</a></footer>
