@@ -12,6 +12,9 @@ var LessPluginCleanCSS = require('less-plugin-clean-css');
 var cleancss = new LessPluginCleanCSS({advanced: true});
 var ngTemplates = require('gulp-ng-templates');
 var sourcemaps = require('gulp-sourcemaps');
+var gulpIf = require('gulp-if');
+
+var development = true;
 
 gulp.task('templates', function () {
     return gulp.src(config.templates.src)
@@ -27,30 +30,34 @@ gulp.task('templates', function () {
 
 gulp.task('styles', function () {
     return gulp.src(config.styles.src)
+        .pipe(gulpIf(development, sourcemaps.init()))
         .pipe(less({
-            plugins: [cleancss],
+            plugins: development ? [] : [cleancss],
             paths: config.styles.paths
         }))
         .pipe(autoprefixer(config.styles.browsers))
         .pipe(concat(config.styles.out))
+        .pipe(sourcemaps.write())
         .pipe(gulp.dest(config.styles.dest));
 });
 
 gulp.task('scripts', function () {
     return gulp.src(config.scripts.src)
-        .pipe(sourcemaps.init())
+        .pipe(gulpIf(development, sourcemaps.init()))
         .pipe(ngAnnotate())
         .pipe(concat(config.scripts.out))
-        .pipe(uglify())
+        .pipe(gulpIf(!development, uglify()))
+        .pipe(gulpIf(development, sourcemaps.write()))
         .pipe(gulp.dest(config.scripts.dest));
 });
 
 gulp.task('vendorScripts', function () {
     return gulp.src(config.vendorScripts.src)
-        .pipe(sourcemaps.init())
+        .pipe(gulpIf(development, sourcemaps.init()))
         .pipe(ngAnnotate())
         .pipe(concat(config.vendorScripts.out))
-        .pipe(uglify())
+        .pipe(gulpIf(!development, uglify()))
+        .pipe(gulpIf(development, sourcemaps.write()))
         .pipe(gulp.dest(config.vendorScripts.dest));
 });
 
@@ -63,6 +70,13 @@ gulp.task('copy', function () {
 gulp.task('clean', function (cb) {
     del(config.clean, {force: true}).then(paths => cb());
 });
+
+gulp.task('set-prod', function (cb) {
+    development = false;
+    cb();
+});
+
+gulp.task('build-prod', ['set-prod', 'styles', 'vendorScripts', 'scripts', 'templates', 'copy']);
 
 gulp.task('build', ['styles', 'vendorScripts', 'scripts', 'templates', 'copy']);
 
