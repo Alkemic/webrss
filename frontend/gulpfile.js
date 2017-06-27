@@ -45,6 +45,15 @@ gulp.task('scripts', function () {
         .pipe(gulp.dest(config.scripts.dest));
 });
 
+gulp.task('vendorScripts', function () {
+    return gulp.src(config.vendorScripts.src)
+        .pipe(sourcemaps.init())
+        .pipe(ngAnnotate())
+        .pipe(concat(config.vendorScripts.out))
+        .pipe(uglify())
+        .pipe(gulp.dest(config.vendorScripts.dest));
+});
+
 gulp.task('copy', function () {
     return config.copy.forEach(function (row) {
         gulp.src(row[0]).pipe(gulp.dest(row[1]));
@@ -55,10 +64,11 @@ gulp.task('clean', function (cb) {
     del(config.clean, {force: true}).then(paths => cb());
 });
 
-gulp.task('build', ['styles', 'scripts', 'templates', 'copy']);
+gulp.task('build', ['styles', 'vendorScripts', 'scripts', 'templates', 'copy']);
 
 gulp.task('watch', ['build'], function () {
     gulp.watch(config.styles.src, ['styles']);
+    gulp.watch(config.vendorScripts.src, ['vendorScripts']);
     gulp.watch(config.scripts.src, ['scripts']);
     gulp.watch(config.templates.src, ['templates']);
     gulp.watch(config.copy.map(el => el[0]), ['copy']);

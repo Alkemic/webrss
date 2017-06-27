@@ -15,7 +15,7 @@ module.exports = {
         out: 'webrss.css',
         browsers: ['last 2 version', '>5%']
     },
-    scripts: {
+    vendorScripts: {
         src: [
             './node_modules/jquery/dist/jquery.js',
             './node_modules/underscore/underscore.js',
@@ -25,6 +25,12 @@ module.exports = {
             './node_modules/angular-ui-bootstrap/dist/ui-bootstrap-tpls.js',
             './node_modules/angular-resource/angular-resource.js',
             './node_modules/angular-sanitize/angular-sanitize.js',
+        ],
+        out: 'vendor.js',
+        dest: destDir + '/js'
+    },
+    scripts: {
+        src: [
             './js/main.js',
             './js/*.js',
         ],
