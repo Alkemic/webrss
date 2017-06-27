@@ -9,6 +9,14 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $uibModal) {
         },
     };
 
+    $scope.toggleEntrySelect = function(entry) {
+        if ($scope.feeds.entries.current == entry) {
+            $scope.feeds.entries.current = null;
+        } else {
+            $scope.feeds.entries.current = entry
+        }
+    };
+
     $scope.createUpdateCategory = function(category) {
         $uibModal.open({
             templateUrl: 'category_form.html',

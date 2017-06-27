@@ -96,7 +96,7 @@
                         <tr ng-repeat="entry in feeds.entries.list.objects"
                             class="row {{ entry.read_at ? '' : 'bold' }}"
                             ng-class="{active: entry.id == feeds.entries.current.id, info: entry.new_entry}"
-                            ng-click="feeds.entries.current = entry">
+                            ng-click="toggleEntrySelect(entry)">
                             <td class="col-md-7 col-xs-9">{{ entry.title }}</td>
                             <td class="col-md-3 hidden-xs">{{ entry.author }}</td>
                             <td class="col-md-2 col-xs-3">{{ entry.published_at }}</td>
