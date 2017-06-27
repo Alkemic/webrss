@@ -1,0 +1,26 @@
+<ul class="nav nav-pills nav-stacked resource-list">
+    <li ng-repeat="feed in feeds"
+        class="feed"
+        data-feed-id="{{ feed.id }}"
+        ng-class="{active: feed.id == selected.id}"
+        ng-click="doSelect(feed);">
+        <a data-feed-id="{{ feed.id }}">
+            <div class="pull-right">
+                <span class="badge"
+                      ng-class="{'new-entries': feed.new_entries}">
+                    {{ feed.un_read }}
+                </span>
+                &nbsp;<i class="glyphicon glyphicon-trash pointer"
+                         ng-click="$event.stopPropagation(); deleteAction(feed);"
+                         title="Delete this feed"></i>
+                &nbsp;<i class="glyphicon glyphicon-edit pointer"
+                         ng-click="$event.stopPropagation(); updateAction(feed);"
+                         title="Edit this feed"></i>
+            </div>
+            <div class="feed-title">
+                <img class="favicon-url" ng-src="{{ feed.site_favicon_url }}">
+                {{ feed.feed_title }}
+            </div>
+        </a>
+    </li>
+</ul>

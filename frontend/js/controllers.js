@@ -1,4 +1,4 @@
-App.controller('RSSCtrl', function($scope, $http, $sce, $modal) {
+App.controller('RSSCtrl', function($scope, $http, $sce, $uibModal) {
     'use strict';
     $scope.feeds = {
         categories: [], // all feeds
@@ -10,7 +10,7 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $modal) {
     };
 
     $scope.createUpdateCategory = function(category) {
-        $modal.open({
+        $uibModal.open({
             templateUrl: 'category_form.html',
             controller: 'RSSAddEditCategoryCtrl',
             size: 'small',
@@ -22,7 +22,7 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $modal) {
     };
 
     $scope.deleteCategory = function(category) {
-        $modal.open({
+        $uibModal.open({
             templateUrl: 'category_delete.html',
             controller: 'RSSDeleteCategoryCtrl',
             size: 'small',
@@ -34,7 +34,7 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $modal) {
     };
 
     $scope.createFeed = function(category) {
-        $modal.open({
+        $uibModal.open({
             templateUrl: 'feed_create.html',
             controller: 'RSSCreateFeedCtrl',
             size: 'small',
@@ -46,7 +46,7 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $modal) {
     };
 
     $scope.updateFeed = function(feed) {
-        $modal.open({
+        $uibModal.open({
             templateUrl: 'feed_update.html',
             controller: 'RSSUpdateFeedCtrl',
             size: 'small',
@@ -58,7 +58,7 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $modal) {
     };
 
     $scope.deleteFeed = function(feed) {
-        $modal.open({
+        $uibModal.open({
             templateUrl: 'feed_delete.html',
             controller: 'RSSDeleteFeedCtrl',
             size: 'small',
@@ -151,7 +151,7 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $modal) {
 
     };
 }).controller('RSSAddEditCategoryCtrl',
-function($scope, $modalInstance, $http, category, parentScope) {
+function($scope, $uibModalInstance, $http, category, parentScope) {
     'use strict';
     $scope.category = category;
     $scope.form = angular.copy(category);
@@ -172,17 +172,17 @@ function($scope, $modalInstance, $http, category, parentScope) {
 
         method.then(function(res) {
             parentScope.loadCategories();
-            $modalInstance.close();
+            $uibModalInstance.close();
         }, function() {
             $scope.error = 'Something went wrong';
         });
     };
 
     $scope.cancel = function() {
-        $modalInstance.dismiss();
+        $uibModalInstance.dismiss();
     };
 }).controller('RSSCreateFeedCtrl',
-function($scope, $modalInstance, $http, category, parentScope) {
+function($scope, $uibModalInstance, $http, category, parentScope) {
     'use strict';
     $scope.form = {feed_url: '', category: ''};
 
@@ -195,17 +195,17 @@ function($scope, $modalInstance, $http, category, parentScope) {
         $http.post('/api/feed/', $scope.form)
             .then(function(res) {
                 parentScope.loadCategories();
-                $modalInstance.close();
+                $uibModalInstance.close();
             }, function() {
                 $scope.error = 'Something went wrong';
             });
     };
 
     $scope.cancel = function() {
-        $modalInstance.dismiss();
+        $uibModalInstance.dismiss();
     };
 }).controller('RSSUpdateFeedCtrl',
-function($scope, $modalInstance, $http, feed, parentScope) {
+function($scope, $uibModalInstance, $http, feed, parentScope) {
     'use strict';
     $scope.feed = feed;
     $scope.form = angular.copy(feed);
@@ -219,47 +219,47 @@ function($scope, $modalInstance, $http, feed, parentScope) {
         $http.put('/api/feed/' + feed.id + '/', $scope.form)
             .then(function(res) {
                 parentScope.loadCategories();
-                $modalInstance.close();
+                $uibModalInstance.close();
             }, function() {
                 $scope.error = 'Something went wrong';
             });
     };
 
     $scope.cancel = function() {
-        $modalInstance.dismiss();
+        $uibModalInstance.dismiss();
     };
 }).controller('RSSDeleteCategoryCtrl',
-function($scope, $modalInstance, $http, category, parentScope) {
+function($scope, $uibModalInstance, $http, category, parentScope) {
     'use strict';
     $scope.category = category;
     $scope.ok = function() {
         $http.delete('/api/category/' + category.id + '/')
             .then(function(res) {
                 parentScope.loadCategories();
-                $modalInstance.close();
+                $uibModalInstance.close();
             }, function() {
                 $scope.error = 'Something went wrong';
             });
     };
 
     $scope.cancel = function() {
-        $modalInstance.dismiss();
+        $uibModalInstance.dismiss();
     };
 }).controller('RSSDeleteFeedCtrl',
-function($scope, $modalInstance, $http, feed, parentScope) {
+function($scope, $uibModalInstance, $http, feed, parentScope) {
     'use strict';
     $scope.feed = feed;
     $scope.ok = function() {
         $http.delete('/api/feed/' + feed.id + '/')
             .then(function(res) {
                 parentScope.loadCategories();
-                $modalInstance.close();
+                $uibModalInstance.close();
             }, function() {
                 $scope.error = 'Something went wrong';
             });
     };
 
     $scope.cancel = function() {
-        $modalInstance.dismiss();
+        $uibModalInstance.dismiss();
     };
 });
