@@ -14,7 +14,11 @@
 </head>
 {% raw %}
 <body ng-app="webrssApp" ng-controller="RSSCtrl">
-    <div id="wrap">
+    <div class="overlay" ng-if="loading">
+        <div class="spinner"><i class="glyphicon glyphicon-refresh"></i></div>
+    </div>
+
+    <div id="wrap" ng-cloak>
         <header class="navbar navbar-inverse navbar-fixed-top" role="navigation">
             <div class="container">
                 <div class="navbar-header">

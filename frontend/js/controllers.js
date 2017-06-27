@@ -1,5 +1,6 @@
 App.controller('RSSCtrl', function($scope, $http, $sce, $uibModal) {
     'use strict';
+    $scope.loading = false;
     $scope.feeds = {
         categories: [], // all feeds
         selected: null, // currently selected feed
@@ -80,26 +81,33 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $uibModal) {
     $scope.moveUpCategory = function(category) {
         $http.post('/api/category/' + category.id + '/move_up')
             .then(function() {
-                $scope.loadCategories();
+                $scope.loadCategories(false);
             });
     };
 
     $scope.moveDownCategory = function(category) {
         $http.post('/api/category/' + category.id + '/move_down')
             .then(function() {
-                $scope.loadCategories();
+                $scope.loadCategories(false);
             });
     };
 
-    $scope.loadCategories = function() {
-        $http.get('/api/category')
+    $scope.loadCategories = function (quiet) {
+        quiet = typeof quiet !== 'undefined' ? quiet : true;
+
+        $scope.loading = !quiet;
+        $http.get('/api/category/')
             .then(function(res) {
                 $scope.feeds.categories = res.data;
+                $scope.loading = false;
+                setTimeout($scope.loadCategories, 60000);
+            }, function(data) {
+                alert('Error loading data', data);
+                console.error('Error loading data', data);
+                $scope.loading = false;
             });
-
-        setTimeout($scope.loadCategories, 60000);
     };
-    $scope.loadCategories();
+    $scope.loadCategories(false);
 
     $scope.$watch('feeds.selected', function(newValue, oldValue) {
         if (!$scope.feeds.selected) return;
@@ -179,7 +187,7 @@ function($scope, $uibModalInstance, $http, category, parentScope) {
         }
 
         method.then(function(res) {
-            parentScope.loadCategories();
+            parentScope.loadCategories(false);
             $uibModalInstance.close();
         }, function() {
             $scope.error = 'Something went wrong';
@@ -202,7 +210,7 @@ function($scope, $uibModalInstance, $http, category, parentScope) {
     $scope.save = function() {
         $http.post('/api/feed/', $scope.form)
             .then(function(res) {
-                parentScope.loadCategories();
+                parentScope.loadCategories(false);
                 $uibModalInstance.close();
             }, function() {
                 $scope.error = 'Something went wrong';
@@ -226,7 +234,7 @@ function($scope, $uibModalInstance, $http, feed, parentScope) {
     $scope.save = function() {
         $http.put('/api/feed/' + feed.id + '/', $scope.form)
             .then(function(res) {
-                parentScope.loadCategories();
+                parentScope.loadCategories(false);
                 $uibModalInstance.close();
             }, function() {
                 $scope.error = 'Something went wrong';
@@ -243,7 +251,7 @@ function($scope, $uibModalInstance, $http, category, parentScope) {
     $scope.ok = function() {
         $http.delete('/api/category/' + category.id + '/')
             .then(function(res) {
-                parentScope.loadCategories();
+                parentScope.loadCategories(false);
                 $uibModalInstance.close();
             }, function() {
                 $scope.error = 'Something went wrong';
@@ -260,7 +268,7 @@ function($scope, $uibModalInstance, $http, feed, parentScope) {
     $scope.ok = function() {
         $http.delete('/api/feed/' + feed.id + '/')
             .then(function(res) {
-                parentScope.loadCategories();
+                parentScope.loadCategories(false);
                 $uibModalInstance.close();
             }, function() {
                 $scope.error = 'Something went wrong';
