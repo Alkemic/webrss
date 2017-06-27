@@ -1,52 +1,171 @@
-html,body{height: 100%;}
-body{ height: 100%; }
+html {
+    height: 100%;
 
-#wrap{width: 100%; height: 100%; }
-#wrap .navbar-header .navbar-brand{height: 40px;}
+    body {
+        height: 100%;
+    }
+}
 
-#rss{width: 100%; height: 100%; padding: 51px 0 0 0; margin: 0;}
+#wrap {
+    width: 100%;
+    height: 100%;
 
-#channels{ height: 100%; overflow: auto; border-right: 1px dashed gray; }
-#channels li img.favicon-url{ height: 16px; width: 16px; border: 0; }
-#channels li.feed a{ padding-right: 5px !important; display: block; }
-#channels li.feed a .feed-title{ overflow: hidden; height: 18px; }
+    .navbar-header {
+        .navbar-brand {
+            height: 40px;
+        }
+    }
+}
 
-#feeds{ height: 100%; margin: 0 !important; padding: 0 !important;}
-#feeds #list{height: 50%; width: 100%; overflow: auto;}
-#feeds #list .feed-list{height: 100%; width: 100%; margin-bottom: 0;}
-#feeds #list .feed-list thead{display: block; height: 30px;}
-#feeds #list .feed-list thead tr.row{display: flex; width: 100%; margin-left: 0;}
-#feeds #list .feed-list tbody{display: block; overflow: auto; height: ~"calc(100% - 34px)";}
-#feeds #list .feed-list tbody tr{cursor: hand; cursor: pointer;}
-#feeds #list .feed-list tbody tr.bold{font-weight: bold;}
-#feeds #content{height: 50%; width: 100%; overflow: auto; border-top: 1px dashed gray; }
+#rss {
+    width: 100%;
+    height: 100%;
+    padding: 51px 0 0 0;
+    margin: 0;
+}
 
-.container{ width: auto; margin: 0 15px;}
-section.rss-entry{margin: 0 !important;}
-section.rss-entry article img{max-width: 100%;}
-section.rss-entry header{font-size: 20px; margin-top: 10px !important;}
+#channels {
+    height: 100%;
+    overflow: auto;
+    border-right: 1px dashed gray;
 
-.navbar{margin-bottom: 0 !important; min-height: 30px !important;}
+    li {
+        img.favicon-url {
+            height: 16px;
+            width: 16px;
+            border: 0;
+        }
 
-ul.nav li button{margin-top: 8px; margin-right: 8px;}
+        &.feed {
+            a {
+                padding-right: 5px !important;
+                display: block;
+                .feed-title {
+                    overflow: hidden;
+                    height: 18px;
+                }
+            }
+        }
+    }
+}
 
-.pointer{cursor: hand; cursor: pointer;}
+#feeds {
+    height: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    #list {
+        height: 50%;
+        width: 100%;
+        overflow: auto;
+
+        .feed-list {
+            height: 100%;
+            width: 100%;
+            margin-bottom: 0;
+
+            thead {
+                display: block;
+                height: 30px;
+
+                tr.row {
+                    display: flex;
+                    width: 100%;
+                    margin-left: 0;
+                }
+            }
+
+            tbody {
+                display: block;
+                overflow: auto;
+                height: ~"calc(100% - 34px)";
+
+                tr {
+                    cursor: hand;
+                    cursor: pointer;
+
+                    &.bold {
+                        font-weight: bold;
+                    }
+                }
+            }
+        }
+    }
+
+    #content {
+        height: 50%;
+        width: 100%;
+        overflow: auto;
+        border-top: 1px dashed gray;
+    }
+}
+
+.container { width: auto; margin: 0 15px;}
+section.rss-entry {
+    margin: 0 !important;
+
+    article img {
+        max-width: 100%;
+    }
+
+    header {
+        font-size: 20px;
+        margin-top: 10px !important;
+    }
+}
+
+.navbar {
+    margin-bottom: 0 !important;
+    min-height: 30px !important;
+}
+
+ul.nav {
+    li {
+        button {
+            margin-top: 8px;
+            margin-right: 8px;
+        }
+    }
+}
+
+.pointer {cursor: hand; cursor: pointer;}
 
 /**** off-canvas ****/
-@media screen and (max-width: 767px){
-    html, body{overflow-x: hidden;}
+@media screen and (max-width: 767px) {
+    html, body {overflow-x: hidden;}
 
-    .row-offcanvas { position: relative; -webkit-transition: all .25s ease-out; -o-transition: all .25s ease-out; transition: all .25s ease-out;}
-    .row-offcanvas-right{right: 0;}
-    .row-offcanvas-left{left: 0;}
-    .row-offcanvas-right .sidebar-offcanvas{ right: -80%;}
-    .row-offcanvas-left .sidebar-offcanvas{left: -80%; padding: 50px 5px 5px 5px;}
-    .row-offcanvas-right.active{right: 80%;}
-    .row-offcanvas-left.active{left: 80%;}
+    .row-offcanvas {
+        position: relative;
+        transition: all .25s ease-out;
+    }
+    .row-offcanvas-right {
+        right: 0;
+
+        &.active {
+            right: 80%;
+        }
+
+        .sidebar-offcanvas {
+            right: -80%;
+        }
+    }
+
+    .row-offcanvas-left {
+        left: 0;
+
+        &.active {
+            left: 80%;
+        }
+
+        .sidebar-offcanvas {
+            left: -80%;
+            padding: 50px 5px 5px 5px;
+        }
+    }
 
     .sidebar-offcanvas {position: absolute; top: 0; width: 80%;}
 }
 
-.navbar-off-canvas{float: left; padding: 9px 10px; margin-left: 15px;}
+.navbar-off-canvas {float: left; padding: 9px 10px; margin-left: 15px;}
 
-.badge.new-entries{ background: #337ab7; }
+.badge.new-entries { background: #337ab7; }
