@@ -116,6 +116,11 @@ class EntryResource(RestResource):
         data['new_entry'] = obj.created_at > obj.feed.last_read_at
         return super(EntryResource, self).prepare_data(obj, data)
 
+    def get_query(self):
+        return self.model.select().join(Feed).where(
+            Feed.deleted_at.is_null(True)
+        )
+
     def object_list(self):
         object_list = super(EntryResource, self).object_list()
 
