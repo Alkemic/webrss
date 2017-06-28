@@ -88,11 +88,11 @@
                 </span>
             </div>
             <div class="col-xs-12 col-sm-9" id="feeds">
-                <div ng-if="!feeds.selected" class="select-feed">
+                <div ng-if="!feeds.selected && !feeds.search" class="select-feed">
                     <h3 class="inner"><i class="glyphicon glyphicon-hand-left"></i> Select feed, please</h3>
                 </div>
 
-                <div ng-if="feeds.selected" id="list" ng-class="{'full-height': !feeds.entries.current}">
+                <div ng-if="feeds.selected || feeds.search" id="list" ng-class="{'full-height': !feeds.entries.current}">
                     <table class="table table-hover table-condensed feed-list">
                         <thead>
                         <tr class="row">

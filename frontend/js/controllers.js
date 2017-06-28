@@ -158,11 +158,18 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $uibModal) {
     $scope.safe = $sce.trustAsHtml;
 
     $scope.doSearch = function() {
+        $scope.loading = true;
         $http.get('/api/entry/?title__ilike=%' + $scope.search + '%')
             .then(function(res) {
                 $scope.feeds.entries.list = res.data;
                 $scope.feeds.selected = null;
+                $scope.feeds.search = true;
                 $scope.feeds.entries.current = null;
+                $scope.loading = false;
+            }, function (err) {
+                alert('Error fetching search results.');
+                console.error(err);
+                $scope.loading = false;
             });
 
     };
