@@ -89,7 +89,7 @@
             </div>
             <div class="col-xs-12 col-sm-9" id="feeds">
                 <div ng-if="!feeds.selected && !feeds.search" class="select-feed">
-                    <h3 class="inner"><i class="glyphicon glyphicon-hand-left"></i> Select feed, please</h3>
+                    <h3 class="inner"><i class="glyphicon glyphicon-hand-left"></i> Please, select feed</h3>
                 </div>
 
                 <div ng-if="feeds.selected || feeds.search" id="list" ng-class="{'full-height': !feeds.entries.current}">
@@ -100,7 +100,7 @@
                             ng-class="{active: entry.id == feeds.entries.current.id, info: entry.new_entry}"
                             ng-click="toggleEntrySelect(entry)">
                             <td class="col-md-7 col-xs-9">{{ entry.title }}</td>
-                            <td class="col-md-3 hidden-xs">{{ entry.author }}</td>
+                            <td class="col-md-3 hidden-xs">{{ entry.author ? entry.author : '-' }}</td>
                             <td class="col-md-2 col-xs-3">{{ entry.published_at }}</td>
                         </tr>
                         <tr ng-show="feeds.entries.list.meta.next">
