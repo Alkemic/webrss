@@ -94,13 +94,6 @@
 
                 <div ng-if="feeds.selected || feeds.search" id="list" ng-class="{'full-height': !feeds.entries.current}">
                     <table class="table table-hover table-condensed feed-list">
-                        <thead>
-                        <tr class="row">
-                            <th class="col-md-7 col-xs-9">Title</th>
-                            <th class="col-md-3 hidden-xs">Author</th>
-                            <th class="col-md-2 col-xs-3">Date</th>
-                        </tr>
-                        </thead>
                         <tbody>
                         <tr ng-repeat="entry in feeds.entries.list.objects"
                             class="row {{ entry.read_at ? '' : 'bold' }}"
