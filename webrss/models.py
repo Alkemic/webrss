@@ -97,13 +97,20 @@ class Feed(BaseModel):
 
     category = peewee.ForeignKeyField(Category, null=True)
 
-    last_read_at = peewee.DateTimeField(default=datetime.now())
+    last_read_at = peewee.DateTimeField(
+        default=datetime(1900, *datetime.min.timetuple()[1:6]),
+    )
     created_at = peewee.DateTimeField(default=datetime.now())
     updated_at = peewee.DateTimeField(null=True)
     deleted_at = peewee.DateTimeField(null=True)
 
+    _count_un_read = None
+
     class Meta:
         order_by = ('-feed_title',)
+        indexes = (
+            (('feed_id', 'published_at'), False),
+        )
 
     def __unicode__(self):
         return "%s" % self.feed_title
@@ -111,11 +118,17 @@ class Feed(BaseModel):
     def __str__(self):
         return self.__unicode__()
 
+    @property
     def count_un_read(self):
         """
         Returns amount of unread entries
         """
-        return self.entry_set.where(Entry.read_at.__eq__(None)).count()
+        if not self._count_un_read:
+            self._count_un_read = self.entry_set.where(
+                Entry.read_at.__eq__(None)
+            ).count()
+
+        return self._count_un_read
 
     def delete_instance(self, recursive=False, delete_nullable=False):
         self.deleted_at = datetime.now()
@@ -130,6 +143,12 @@ class Feed(BaseModel):
     def select(cls, *selection):
         select = super(Feed, cls).select(*selection)
         return select.where(cls.deleted_at.__eq__(None))
+
+    def has_new_entries(self, entry_last_published_at):
+        if entry_last_published_at is not None:
+            return self.last_read_at < entry_last_published_at
+
+        return not(not(self.count_un_read))
 
 
 class Entry(BaseModel):

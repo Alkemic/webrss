@@ -15,17 +15,16 @@ from .decorators import jsonify
 from .functions import get_favicon, process_feed
 
 
-LAST_READ_AT_SQL = """
+ENTRY_LAST_PUBLISHED_AT_SQL = """
 select
     f.id,
     (
-        select e.published_at
+        select max(e.published_at)
         from entry e
         where e.feed_id = f.id
-        order by e.published_at desc
-        limit 1
-    ) entry_last_read_at
-from feed f;
+    ) entry_max_published_at
+from feed f
+where f.deleted_at is null;
 """
 
 
@@ -34,27 +33,28 @@ RestResource.authorize = lambda *args, **kwargs: True
 
 
 class CategoryResource(RestResource):
-    _last_read_at = None
-    _last_read = None
+    _entry_last_published_at = None
+    _entry_last_published = None
 
     exclude = ('created_at', 'updated_at', 'deleted_at',)
 
     @property
-    def last_read_at(self):
-        _invalidated = (
-            not self._last_read or
-            (datetime.now() - self._last_read_at).seconds > 60
+    def entry_last_published_at(self):
+        invalidated = (
+            not self._entry_last_published or
+            (datetime.now() - self._entry_last_published_at).seconds > 5
         )
-        if _invalidated:
-            cursor = DATABASE.execute_sql(LAST_READ_AT_SQL)
-            self._last_read = dict(cursor.fetchall())
-            self._last_read_at = datetime.now()
+        if invalidated:
+            cursor = DATABASE.execute_sql(ENTRY_LAST_PUBLISHED_AT_SQL)
+            self._entry_last_published = dict(cursor.fetchall())
+            self._entry_last_published_at = datetime.now()
 
-        return self._last_read
+        return self._entry_last_published
 
     def prepare_data(self, obj, data):
-        data['feeds'] = [
-            {
+        data['feeds'] = []
+        for feed in obj.not_deleted_feeds():
+            data['feeds'].append({
                 'id': feed.id,
                 'feed_title': feed.feed_title,
                 'feed_image': feed.feed_image,
@@ -62,11 +62,12 @@ class CategoryResource(RestResource):
                 'site_favicon_url': feed.site_favicon_url,
                 'category': feed.category.id,
                 'last_read_at': str(feed.last_read_at),
-                'un_read': feed.count_un_read(),
-                'new_entries': feed.last_read_at < self.last_read_at[feed.id],
-            }
-            for feed in obj.not_deleted_feeds()
-        ]
+                'un_read': feed.count_un_read,
+                'new_entries': feed.has_new_entries(
+                    self.entry_last_published_at[feed.id],
+                ),
+            })
+
         return data
 
 
@@ -75,7 +76,7 @@ class FeedResource(RestResource):
     include_resources = {'category': CategoryResource}
 
     def prepare_data(self, obj, data):
-        data['un_read'] = obj.count_un_read()
+        data['un_read'] = obj.count_un_read
         return data
 
     def save_object(self, instance, raw_data):
