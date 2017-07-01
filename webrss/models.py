@@ -108,9 +108,6 @@ class Feed(BaseModel):
 
     class Meta:
         order_by = ('-feed_title',)
-        indexes = (
-            (('feed_id', 'published_at'), False),
-        )
 
     def __unicode__(self):
         return "%s" % self.feed_title
