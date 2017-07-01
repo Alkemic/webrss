@@ -102,3 +102,10 @@ def process_feed(feed, feed_data=None):
 
         feed_entry.feed = feed
         feed_entry.save()
+
+
+def to_datetime(datetime_or_other):
+    if isinstance(datetime_or_other, datetime):
+        return datetime_or_other
+
+    return datetime.strptime(datetime_or_other, '%Y-%m-%d %H:%M:%S')

@@ -12,7 +12,7 @@ from . import DATABASE
 from .models import Feed, Category, Entry
 from .main import app, rest_api
 from .decorators import jsonify
-from .functions import get_favicon, process_feed
+from .functions import get_favicon, process_feed, to_datetime
 
 
 ENTRY_LAST_PUBLISHED_AT_SQL = """
@@ -46,7 +46,10 @@ class CategoryResource(RestResource):
         )
         if invalidated:
             cursor = DATABASE.execute_sql(ENTRY_LAST_PUBLISHED_AT_SQL)
-            self._entry_last_published = dict(cursor.fetchall())
+            self._entry_last_published = {
+                pk: to_datetime(published_ad) if published_ad else None
+                for pk, published_ad in cursor.fetchall()
+            }
             self._entry_last_published_at = datetime.now()
 
         return self._entry_last_published
