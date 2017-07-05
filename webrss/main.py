@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-"""webrss.main"""
 from flask import Flask
 from flask import g
 from flask_peewee.rest import RestAPI
@@ -15,7 +14,9 @@ rest_api = RestAPI(app)
 @app.before_request
 def peewee_database_connect():
     g.db = DATABASE
-    g.db.connect()
+    g.db.get_conn()
+    if g.db.is_closed():
+        g.db.connect()
 
 
 @app.after_request
