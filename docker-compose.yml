@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  app:
+    image: alkemic/webrss
+    restart: always
+    network_mode: "bridge"
+    links:
+      - db
+    environment:
+      - DB_TYPE=mysql
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_NAME=webrss
+    ports:
+      - 8000:8000
+
+  db:
+    image: mysql:5.6
+    network_mode: "bridge"
+    restart: always
+    volumes:
+      - ./mysql_data/:/var/lib/mysql/
+    environment:
+      - MYSQL_DATABASE=webrss
+      - MYSQL_ALLOW_EMPTY_PASSWORD=yes # of course you should use some password
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
