@@ -1,0 +1,16 @@
+uwsgi:
+  base: $(APP_DIR)
+  chdir: %(base)
+
+  import: %(app).views
+  app: webrss
+  module: run
+  wsgi-file: webrss/main.py
+  callable: app
+
+  master: true
+  processes: 1
+
+  http: 0.0.0.0:8000
+
+  cron: 56 -1 -1 -1 -1 $(APP_DIR)/scripts/collect_feeds.py
