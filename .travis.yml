@@ -10,3 +10,15 @@ before_install:
 
 script:
   - docker build -t alkemic/webrss .
+
+after_success:
+  - |
+    if [ "$TRAVIS_TAG" != "" ] || [ "$TRAVIS_BRANCH" == "master" ]
+    then
+      docker login -u=alkemic -p="${PASSWORD}"
+      docker push alkemic/webrss:${TRAVIS_TAG:-latest}
+    fi
+
+env:
+  global:
+    secure: jaLva/ZSxBi1cMdpoGXnecDPUde3Ro0t3jVnqFrP2W6HlH+Ot4RSil9SbYl1t5TLLdZjkZdyPpZlcN72OK2ECVhe9a8rL4/hZYoV9Rz6U5kiL5zPP6Vhm48Ddxf4iPmpmuGUE9eB+2+p5otlc+d0wBpxyd/h95mZ5Nx8Te8iqZ0=
