@@ -16,7 +16,14 @@ after_success:
     if [ "$TRAVIS_TAG" != "" ] || [ "$TRAVIS_BRANCH" == "master" ]
     then
       docker login -u=alkemic -p="${PASSWORD}"
-      docker push alkemic/webrss:${TRAVIS_TAG:-latest}
+      docker push alkemic/webrss
+      if [ "$TRAVIS_TAG" != "" ] && [[ $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+      then
+        revs=( ${TRAVIS_TAG//./ } )
+        docker push alkemic/webrss:${revs[0]}.${revs[1]}.${revs[2]}
+        docker push alkemic/webrss:${revs[0]}.${revs[1]}
+        docker push alkemic/webrss:${revs[0]}
+      fi
     fi
 
 env:
