@@ -22,9 +22,9 @@ after_success:
       then
         revs=( ${TRAVIS_TAG//./ } )
 
-        docker tag alkemic/webrss:latest TARGET_IMAGE:${revs[0]}.${revs[1]}.${revs[2]}
-        docker tag alkemic/webrss:latest TARGET_IMAGE:${revs[0]}.${revs[1]}
-        docker tag alkemic/webrss:latest TARGET_IMAGE:${revs[0]}
+        docker tag alkemic/webrss:latest alkemic/webrss:${revs[0]}.${revs[1]}.${revs[2]}
+        docker tag alkemic/webrss:latest alkemic/webrss:${revs[0]}.${revs[1]}
+        docker tag alkemic/webrss:latest alkemic/webrss:${revs[0]}
 
         docker push alkemic/webrss:${revs[0]}.${revs[1]}.${revs[2]}
         docker push alkemic/webrss:${revs[0]}.${revs[1]}
