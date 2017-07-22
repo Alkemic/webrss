@@ -94,25 +94,32 @@
 
                 <div ng-if="feeds.selected || feeds.search" id="list" ng-class="{'full-height': !feeds.entries.current}">
                     <table class="table table-hover table-condensed feed-list">
-                        <tbody>
                         <tr ng-repeat="entry in feeds.entries.list.objects"
                             class="row {{ entry.read_at ? '' : 'bold' }}"
                             ng-class="{active: entry.id == feeds.entries.current.id, info: entry.new_entry}"
                             ng-click="toggleEntrySelect(entry)">
-                            <td class="col-md-7 col-xs-9">{{ entry.title }}</td>
-                            <td class="col-md-3 hidden-xs">{{ entry.author ? entry.author : '-' }}</td>
-                            <td class="col-md-2 col-xs-3">{{ entry.published_at }}</td>
+                            <td class="col-md-12 col-xs-12">
+                                <div class="pull-right">
+                                    {{ entry.published_at }}
+                                </div>
+                                <div class="entry">
+                                    <span class="title">{{ entry.title }}</span>
+                                    <span class="summary" ng-if="entry.summary">
+                                        {{ entry.summary | stripTags }}
+                                    </span>
+                                </div>
+
+                            </td>
                         </tr>
                         <tr ng-show="feeds.entries.list.meta.next">
-                            <td colspan="4" class="text-center">
+                            <td class="text-center" colspan="2">
                                 <span class="read-feed btn btn-default"
                                       ng-click="loadMore(feeds.entries.list.meta.next)">
                                       Load more
                                 </span>
                             </td>
                         </tr>
-                        <tr class="fixer"><td colspan="4"></td></tr>
-                        </tbody>
+                        <tr class="fixer"><td></td></tr>
                     </table>
                 </div>
                 <div id="content" ng-show="feeds.entries.current">

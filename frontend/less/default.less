@@ -113,34 +113,41 @@ html {
             width: 100%;
             margin-bottom: 0;
 
-            tbody {
-                display: block;
-                overflow: auto;
-                height: 100%;
+            display: block;
+            overflow: auto;
 
-                tr {
-                    cursor: hand;
-                    cursor: pointer;
+            tr {
+                cursor: hand;
+                cursor: pointer;
 
-                    &.bold {
-                        font-weight: bold;
-                    }
-                    &.fixer {
-                        border: 0;
-                        padding: 0;
-                        margin: 0;
-
-                        td {
-                            border: 0;
-                            height: 0;
-                            padding: 1px;
+                &.bold {
+                    td {
+                        span.title {
+                            font-weight: bold;
                         }
                     }
+                }
+                &.fixer {
+                    border: 0;
+                    padding: 0;
+                    margin: 0;
+
                     td {
-                        max-width: 0;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
+                        border: 0;
+                        height: 0;
+                        padding: 1px;
+                    }
+                }
+                td {
+                    max-width: 0;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    div.entry{
+                        display: inline-block;
+                        span.summary {
+                            font-weight: normal; color: #bbb;
+                        }
                     }
                 }
             }
