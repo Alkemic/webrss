@@ -14,9 +14,13 @@
     </div>
     <div class="form-group">
         <label for="category">Category</label>
-        <select class="form-control" id="category" placeholder="Select category" required="required" ng-model="form.category">
-            <option ng-repeat="category in categories" value="{{ category.id }}" ng-selected="form.category == category.id">{{ category.title }}</option>
-        </select>
+
+        <select class="form-control"
+            id="category"
+            placeholder="Select category"
+            required="required"
+            ng-model="form.category"
+            ng-options="category.id as category.title for category in categories"></select>
     </div>
 </div>
 <div class="modal-footer">

@@ -230,13 +230,11 @@ function($scope, $uibModalInstance, $http, category, parentScope) {
 }).controller('RSSUpdateFeedCtrl',
 function($scope, $uibModalInstance, $http, feed, parentScope) {
     'use strict';
-    $scope.feed = feed;
+    $scope.categories = parentScope.feeds.categories.objects;
     $scope.form = angular.copy(feed);
-    $scope.form.category = $scope.form.category.toString();
+    $scope.form.category = $scope.categories.filter(c => c.id === feed.category)[0];
     delete $scope.form.un_read;
     delete $scope.form.new_entries;
-
-     $scope.categories = parentScope.feeds.categories.objects;
 
     $scope.save = function() {
         $http.put('/api/feed/' + feed.id + '/', $scope.form)
@@ -248,9 +246,7 @@ function($scope, $uibModalInstance, $http, feed, parentScope) {
             });
     };
 
-    $scope.cancel = function() {
-        $uibModalInstance.dismiss();
-    };
+    $scope.cancel = $uibModalInstance.dismiss;
 }).controller('RSSDeleteCategoryCtrl',
 function($scope, $uibModalInstance, $http, category, parentScope) {
     'use strict';
