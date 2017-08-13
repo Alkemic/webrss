@@ -7,22 +7,23 @@
   "license": "MIT",
   "dependencies": {
     "angular": "1.6.4",
-    "angular-resource": "^1.6.4",
-    "angular-sanitize": "^1.6.4",
-    "angular-ui-bootstrap": "^2.5.0",
+    "angular-resource": "1.6.4",
+    "angular-sanitize": "1.6.4",
+    "angular-ui-bootstrap": "2.5.0",
+    "babili": "0.1.4",
     "bootstrap": "3.3.7",
     "del": "3.0.0",
     "gulp": "3.9.1",
     "gulp-autoprefixer": "4.0.0",
+    "gulp-babel": "7.0.0",
     "gulp-concat": "2.6.1",
     "gulp-if": "2.0.2",
     "gulp-less": "3.3.2",
-    "gulp-ng-annotate": "^2.0.0",
+    "gulp-ng-annotate": "2.0.0",
     "gulp-ng-templates": "0.0.10",
     "gulp-sourcemaps": "2.6.0",
-    "gulp-uglify": "3.0.0",
-    "jquery": "^3.2.1",
+    "jquery": "3.2.1",
     "less-plugin-clean-css": "1.5.1",
-    "underscore": "^1.8.3"
+    "underscore": "1.8.3"
   }
 }

@@ -32,7 +32,12 @@ RUN set -x && \
     \
     pip install -r requirements.txt && \
     pip install uwsgi==2.0.15 && \
-    (cd frontend && npm i && ./node_modules/.bin/gulp build && rm -rf ./node_modules/) && \
+    (\
+        cd frontend && \
+        npm i && \
+        PRODUCTION=true ./node_modules/.bin/gulp build && \
+        rm -rf ./node_modules/ \
+    ) && \
     \
     apt-get remove --purge -y $PACKAGES_REQUIRED_PRE_BUILD $PACKAGES_REQUIRED_BUILD && \
     apt-get install -y --no-install-recommends ca-certificates&& \
