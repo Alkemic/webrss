@@ -1,17 +1,26 @@
 #!/usr/bin/env python
 #  -*- coding:utf-8 -*-
+import socket
 import sys
+import threading
+
+import httplib2
 
 sys.path.insert(0, '.')  # noqa
-
-import threading
-import requests
 
 from webrss.functions import process_feed
 from webrss.models import Feed, Category
 
 
+TIMEOUT = 45
+HEADERS = {
+    "user-agent": "WebRSS parser (https://github.com/Alkemic/webrss)",
+}
+
 threads = []
+
+
+h = httplib2.Http(timeout=TIMEOUT)
 
 
 class FeedThread(threading.Thread):
@@ -20,13 +29,14 @@ class FeedThread(threading.Thread):
         self.feed = feed
 
     def run(self):
-        print u"started, {}".format(self.feed.__str__())
         try:
-            resp = requests.get(self.feed.feed_url, timeout=30)
-            feed_data = resp.content
-            process_feed(self.feed, feed_data)
-        except (requests.ConnectionError, requests.ReadTimeout) as e:
-            print "exception at", self.feed, e
+            resp, content = h.request(
+                self.feed.feed_url,
+                headers=HEADERS,
+            )
+            process_feed(self.feed, content)
+        except socket.timeout:
+            print "Feed '{}' timeouted".format(self.feed.__str__())
 
 
 feeds = Feed.select().where(
