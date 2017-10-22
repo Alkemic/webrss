@@ -14,3 +14,4 @@ uwsgi:
   http: 0.0.0.0:8000
 
   cron: 56 -1 -1 -1 -1 $(APP_DIR)/scripts/collect_feeds.py
+  cron-harakiri: 600
