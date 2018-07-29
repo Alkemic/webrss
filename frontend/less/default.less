@@ -143,10 +143,13 @@ html {
                     overflow: hidden;
                     text-overflow: ellipsis;
                     white-space: nowrap;
-                    div.entry{
-                        display: inline-block;
+                    &.entry{
+                        color: #bbb;
+                        span.title, span.pull-right {
+                            color: #000;
+                        }
                         span.summary {
-                            font-weight: normal; color: #bbb;
+                            font-weight: normal;
                         }
                     }
                 }

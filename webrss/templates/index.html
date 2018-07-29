@@ -98,17 +98,17 @@
                             class="row {{ entry.read_at ? '' : 'bold' }}"
                             ng-class="{active: entry.id == feeds.entries.current.id, info: entry.new_entry}"
                             ng-click="toggleEntrySelect(entry)">
-                            <td class="col-md-12 col-xs-12">
-                                <div class="pull-right">
+                            <td class="col-md-12 col-xs-12 entry">
+                                <span class="pull-right">
                                     {{ entry.published_at }}
-                                </div>
-                                <div class="entry">
-                                    <span class="title">{{ entry.title }}</span>
-                                    <span class="summary" ng-if="entry.summary">
-                                        {{ entry.summary | stripTags }}
-                                    </span>
-                                </div>
+                                </span>
 
+                                <span class="title">
+                                    {{ entry.title }}
+                                </span>
+                                <span class="summary" ng-if="entry.summary">
+                                    {{ entry.summary | stripTags }}
+                                </span>
                             </td>
                         </tr>
                         <tr ng-show="feeds.entries.list.meta.next">
