@@ -118,6 +118,7 @@ class EntryResource(RestResource):
 
     def prepare_data(self, obj, data):
         data['new_entry'] = obj.created_at > obj.feed.last_read_at
+        data['published_at'] = obj.published_at.strftime("%Y-%m-%d %H:%M")
         return super(EntryResource, self).prepare_data(obj, data)
 
     def get_query(self):
