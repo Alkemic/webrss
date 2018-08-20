@@ -234,3 +234,22 @@ ul.nav {
 .navbar-off-canvas {float: left; padding: 9px 10px; margin-left: 15px;}
 
 .badge.new-entries { background: #337ab7; }
+
+.alert.failed-load-categories {
+    position: absolute;
+    top: 100px;
+    right: 100px;
+    width: 500px;
+    z-index: 99999;
+
+    .btn {
+        display: inline;
+    }
+
+    @media screen and (max-width: 767px) {
+        position: absolute;
+        top: 100px;
+        right: 40px;
+        left: 40px;
+    }
+}

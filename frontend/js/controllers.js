@@ -1,6 +1,7 @@
 App.controller('RSSCtrl', function($scope, $http, $sce, $uibModal) {
     'use strict';
     $scope.loading = false;
+    $scope.failedLoadCategories = false;
     $scope.feeds = {
         categories: [], // all feeds
         selected: null, // currently selected feed
@@ -98,16 +99,23 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $uibModal) {
         $scope.loading = !quiet;
         $http.get('/api/category/')
             .then(function(res) {
+                $scope.failedLoadCategories = false;
                 $scope.feeds.categories = res.data;
                 $scope.loading = false;
                 setTimeout($scope.loadCategories, 60000);
             }, function(data) {
-                alert('Error loading data', data);
+                $scope.failedLoadCategories = true;
                 console.error('Error loading data', data);
                 $scope.loading = false;
             });
     };
     $scope.loadCategories(false);
+
+    $scope.loadCategoriesFn = function (e) {
+        e.preventDefault();
+        $scope.loadCategories(false);
+        $scope.failedLoadCategories = false;
+    };
 
     $scope.$watch('feeds.selected', function(newValue, oldValue) {
         if (!$scope.feeds.selected) return;
