@@ -87,6 +87,10 @@ class FeedResource(RestResource):
 
     def save_object(self, instance, raw_data):
         if instance.id:
+            favicon = get_favicon(instance.site_favicon_url)
+            instance.site_favicon = (
+                base64.b64encode(favicon) if favicon else None
+            )
             return super(FeedResource, self).save_object(instance, raw_data)
 
         try:

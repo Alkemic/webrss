@@ -2,7 +2,6 @@
 """
 Functions used across application
 """
-import base64
 from datetime import datetime
 import sys
 import urllib2
