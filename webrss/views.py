@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 """Feed related views"""
+import base64
 from datetime import datetime
 
 import feedparser
@@ -8,6 +9,7 @@ from flask import request
 from flask_peewee.rest import RestResource
 import peewee
 
+from functions import get_favicon_url
 from . import DATABASE
 from .models import Feed, Category, Entry
 from .main import app, rest_api
@@ -63,6 +65,7 @@ class CategoryResource(RestResource):
                 'feed_image': feed.feed_image,
                 'feed_url': feed.feed_url,
                 'site_favicon_url': feed.site_favicon_url,
+                'site_favicon': feed.site_favicon,
                 'category': feed.category.id,
                 'last_read_at': str(feed.last_read_at),
                 'un_read': feed.count_un_read,
@@ -103,7 +106,13 @@ class FeedResource(RestResource):
 
         if 'link' in feed.feed:
             instance.site_url = feed.feed['link']
-            instance.site_favicon_url = get_favicon(feed.feed['link'])
+
+            if not instance.site_favicon_url:
+                favicon_url = get_favicon_url(feed.feed['link'])
+                instance.site_favicon_url = favicon_url
+
+        favicon = get_favicon(instance.site_favicon_url)
+        instance.site_favicon = base64.b64encode(favicon) if favicon else None
 
         returned = super(FeedResource, self).save_object(instance, raw_data)
 

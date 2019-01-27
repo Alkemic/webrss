@@ -94,6 +94,7 @@ class Feed(BaseModel):
 
     site_url = peewee.CharField(max_length=255, null=True)
     site_favicon_url = peewee.CharField(max_length=255, null=True)
+    site_favicon = peewee.BlobField(null=True)
 
     category = peewee.ForeignKeyField(Category, null=True)
 

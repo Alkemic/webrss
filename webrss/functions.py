@@ -2,6 +2,7 @@
 """
 Functions used across application
 """
+import base64
 from datetime import datetime
 import sys
 import urllib2
@@ -32,7 +33,7 @@ def categories_tuple():
     return tuple(entry for i, entry in enumerate(entries))
 
 
-def get_favicon(url):
+def get_favicon_url(url):
     """
     Fetch favicon from given url
     First try, to find a link tag, then tries to fetch <domain>/favicon.ico
@@ -71,6 +72,29 @@ def get_favicon(url):
         pass
 
     return None
+
+
+def get_favicon(url):
+    """
+    Fetch favicon from given url
+    First try, to find a link tag, then tries to fetch <domain>/favicon.ico
+
+    :type url: str
+    :return: str|bool
+    """
+    headers = {
+        'User-Agent': 'urllib2 (Python %s)' % sys.version.split()[0],
+        'Connection': 'close',
+    }
+
+    if not url:
+        return None
+
+    req = urllib2.Request(url, headers=headers)
+    try:
+        return urllib2.urlopen(req).read()
+    except(urllib2.HTTPError, urllib2.URLError):
+        return None
 
 
 def process_feed(feed, feed_data=None):

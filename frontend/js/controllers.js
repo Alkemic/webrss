@@ -245,6 +245,7 @@ function($scope, $uibModalInstance, $http, feed, parentScope) {
     delete $scope.form.new_entries;
 
     $scope.save = function() {
+        console.log($scope.form)
         $http.put('/api/feed/' + feed.id + '/', $scope.form)
             .then(function(res) {
                 parentScope.loadCategories(false);

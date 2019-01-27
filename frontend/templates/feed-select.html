@@ -18,7 +18,8 @@
                          title="Edit this feed"></i>
             </div>
             <div class="feed-title">
-                <img class="favicon-url" ng-src="{{ feed.site_favicon_url }}">
+                <img class="favicon-url" ng-src="/static/images/favicon.ico" ng-if="!feed.site_favicon">
+                <img class="favicon-url" ng-src="data:image/png;base64,{{ feed.site_favicon }}" ng-if="feed.site_favicon">
                 {{ feed.feed_title }}
             </div>
         </a>
