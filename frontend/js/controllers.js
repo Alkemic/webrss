@@ -250,6 +250,7 @@ App.controller("RSSCtrl", ($scope, $http, $sce, $uibModal, $location) => {
     $scope.cancel = $uibModalInstance.dismiss
 }).controller("RSSUpdateFeedCtrl", ($scope, $uibModalInstance, $http, feed, parentScope) => {
     $scope.categories = parentScope.feeds.categories.objects
+    $scope.feed = feed
     $scope.form = angular.copy(feed)
     $scope.form.category = $scope.categories.filter(c => c.id === feed.category)[0]
     delete $scope.form.un_read
