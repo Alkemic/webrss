@@ -18,7 +18,6 @@ module.exports = {
     vendorScripts: {
         src: [
             nodeDir + "/jquery/dist/jquery.js",
-            nodeDir + "/underscore/underscore.js",
             nodeDir + "/bootstrap/dist/js/bootstrap.js",
             nodeDir + "/angular/angular.js",
             nodeDir + "/angular-ui-bootstrap/dist/ui-bootstrap.js",

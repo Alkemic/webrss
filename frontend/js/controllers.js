@@ -163,13 +163,12 @@ App.controller("RSSCtrl", function($scope, $http, $sce, $uibModal, $location) {
             .then(function(res) {
                 let feed, feeds = []
 
-                _.forEach($scope.feeds.categories.objects, function(category) {
+                $scope.feeds.categories.objects.forEach((category) => {
                     feeds.push.apply(feeds, category.feeds)
                 })
 
-                feed = _.find(feeds, function(obj) {
-                    return obj.id === $scope.feeds.entries.current.feed.id
-                })
+                window.o = $scope.feeds.categories.objects
+                feed = feeds.find((obj) => obj.id === $scope.feeds.entries.current.feed.id)
 
                 if (feed)
                     feed.un_read -= 1
