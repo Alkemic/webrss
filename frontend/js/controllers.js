@@ -1,4 +1,4 @@
-App.controller('RSSCtrl', function($scope, $http, $sce, $uibModal) {
+App.controller('RSSCtrl', function($scope, $http, $sce, $uibModal, $location) {
     'use strict';
     $scope.loading = false;
     $scope.failedLoadCategories = false;
@@ -93,6 +93,38 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $uibModal) {
             });
     };
 
+    $scope.$watch('feeds.selected', (feed) => {
+        if (!feed) return;
+        feed.new_entries = false;
+
+        let slug = `${feed.id}-${feed.feed_title.toLowerCase().replace(/ /g, "-")}`
+        if($location.url() !== slug) $location.url(slug)
+    })
+
+    let onChangeFeed = () => {
+        let match = /^\/(\d+)-.*/.exec($location.url())
+        if(!!match) {
+            if(!$scope.feeds.categories.objects) return
+            let feed = null, feedId = parseInt(match[1])
+            $scope.feeds.categories.objects.forEach((category) => {
+                category.feeds.forEach((_feed) => {
+                    if(_feed.id === feedId) {
+                        feed = _feed
+                    }
+                })
+            })
+            $scope.feeds.selected = feed
+            $http.get('/api/entry/?feed=' + feed.id)
+                .then(function(res) {
+                    $scope.feeds.entries.list = res.data;
+                    $scope.feeds.entries.current = null;
+                });
+        } else {
+            $scope.feeds.selected = null
+        }
+    }
+
+    let initialLoading = true
     $scope.loadCategories = function (quiet) {
         quiet = typeof quiet !== 'undefined' ? quiet : true;
 
@@ -102,6 +134,11 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $uibModal) {
                 $scope.failedLoadCategories = false;
                 $scope.feeds.categories = res.data;
                 $scope.loading = false;
+                if(initialLoading) {
+                    onChangeFeed()
+                    initialLoading = false
+                    $scope.$on("$locationChangeSuccess", onChangeFeed);
+                }
                 setTimeout($scope.loadCategories, 60000);
             }, function(data) {
                 $scope.failedLoadCategories = true;
@@ -116,17 +153,6 @@ App.controller('RSSCtrl', function($scope, $http, $sce, $uibModal) {
         $scope.loadCategories(false);
         $scope.failedLoadCategories = false;
     };
-
-    $scope.$watch('feeds.selected', function(newValue, oldValue) {
-        if (!$scope.feeds.selected) return;
-        $scope.feeds.selected.new_entries = false;
-
-        $http.get('/api/entry/?feed=' + $scope.feeds.selected.id)
-            .then(function(res) {
-                $scope.feeds.entries.list = res.data;
-                $scope.feeds.entries.current = null;
-            });
-    });
 
     $scope.$watch('feeds.entries.current', function() {
         if (!$scope.feeds.entries.current) return;
