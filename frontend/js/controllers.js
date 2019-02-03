@@ -97,18 +97,18 @@ App.controller("RSSCtrl", ($scope, $http, $sce, $uibModal, $location) => {
         feed.new_entries = false
 
         let slug = `${feed.id}-${feed.feed_title.toLowerCase().replace(/ /g, "-")}`
-        if($location.url() !== slug) $location.url(slug)
+        if ($location.url() !== slug) $location.url(slug)
     })
 
     let onChangeFeed = () => {
         let match = /^\/(\d+)-.*/.exec($location.url())
-        if(!!match) {
-            if(!$scope.feeds.categories.objects) return
+        if (!!match) {
+            if (!$scope.feeds.categories.objects) return
 
             let feed = null, feedId = parseInt(match[1])
             $scope.feeds.categories.objects.forEach(category => {
                 category.feeds.forEach(_feed => {
-                    if(_feed.id === feedId) {
+                    if (_feed.id === feedId) {
                         feed = _feed
                     }
                 })
@@ -134,7 +134,7 @@ App.controller("RSSCtrl", ($scope, $http, $sce, $uibModal, $location) => {
                 $scope.failedLoadCategories = false
                 $scope.feeds.categories = res.data
                 $scope.loading = false
-                if(initialLoading) {
+                if (initialLoading) {
                     onChangeFeed()
                     initialLoading = false
                     $scope.$on("$locationChangeSuccess", onChangeFeed)
