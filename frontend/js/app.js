@@ -3,6 +3,6 @@ let App = angular.module(
     ["ngSanitize", "ngResource", "ui.bootstrap", "webrssApp.templates"]
 )
 
-App.config(($locationProvider) => {
+App.config($locationProvider => {
     $locationProvider.hashPrefix("")
 })

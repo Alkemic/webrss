@@ -1,5 +1,4 @@
-App.controller("RSSCtrl", function($scope, $http, $sce, $uibModal, $location) {
-    "use strict"
+App.controller("RSSCtrl", ($scope, $http, $sce, $uibModal, $location) => {
     $scope.loading = false
     $scope.failedLoadCategories = false
     $scope.feeds = {
@@ -11,7 +10,7 @@ App.controller("RSSCtrl", function($scope, $http, $sce, $uibModal, $location) {
         },
     }
 
-    $scope.toggleEntrySelect = function(entry) {
+    $scope.toggleEntrySelect = entry => {
         if ($scope.feeds.entries.current === entry) {
             $scope.feeds.entries.current = null
         } else {
@@ -19,81 +18,81 @@ App.controller("RSSCtrl", function($scope, $http, $sce, $uibModal, $location) {
         }
     }
 
-    $scope.createUpdateCategory = function(category) {
+    $scope.createUpdateCategory = category => {
         $uibModal.open({
             templateUrl: "category_form.html",
             controller: "RSSAddEditCategoryCtrl",
             size: "small",
             resolve: {
-                category: function() { return category || [] },
-                parentScope: function() { return $scope }
-            }
+                category: () => category || [],
+                parentScope: () => $scope,
+            },
         })
     }
 
-    $scope.deleteCategory = function(category) {
+    $scope.deleteCategory = category => {
         $uibModal.open({
             templateUrl: "category_delete.html",
             controller: "RSSDeleteCategoryCtrl",
             size: "small",
             resolve: {
-                category: function() { return category },
-                parentScope: function() { return $scope }
-            }
+                category: () => category,
+                parentScope: () => $scope,
+            },
         })
     }
 
-    $scope.createFeed = function(category) {
+    $scope.createFeed = category => {
         $uibModal.open({
             templateUrl: "feed_create.html",
             controller: "RSSCreateFeedCtrl",
             size: "small",
             resolve: {
-                category: function() { return category },
-                parentScope: function() { return $scope }
+                category: () => category,
+                parentScope: () => $scope,
             }
         })
     }
 
-    $scope.updateFeed = function(feed) {
+    $scope.updateFeed = feed => {
         $uibModal.open({
             templateUrl: "feed_update.html",
             controller: "RSSUpdateFeedCtrl",
             size: "small",
             resolve: {
-                feed: function() { return feed },
-                parentScope: function() { return $scope }
-            }
+                feed: () => feed,
+                parentScope: () => $scope,
+            },
         })
     }
 
-    $scope.deleteFeed = function(feed) {
+    $scope.deleteFeed = feed => {
         $uibModal.open({
             templateUrl: "feed_delete.html",
             controller: "RSSDeleteFeedCtrl",
             size: "small",
             resolve: {
-                feed: function() { return feed },
-                parentScope: function() { return $scope }
+                feed: () => feed,
+                parentScope: () => $scope,
             }
         })
     }
 
-    $scope.moveUpCategory = function(category) {
+    $scope.moveUpCategory = category => {
         $http.post(`/api/category/${category.id}/move_up`)
-            .then(function() {
+            .then(() => {
                 $scope.loadCategories(false)
             })
     }
 
-    $scope.moveDownCategory = function(category) {
+    $scope.moveDownCategory = category => {
         $http.post(`/api/category/${category.id}/move_down`)
-            .then(function() {
+            .then(() => {
                 $scope.loadCategories(false)
             })
     }
 
-    $scope.$watch("feeds.selected", (feed) => {
+    $scope.$watch("feeds.selected", feed => {
         if (!feed) return
         feed.new_entries = false
 
@@ -105,9 +104,10 @@ App.controller("RSSCtrl", function($scope, $http, $sce, $uibModal, $location) {
         let match = /^\/(\d+)-.*/.exec($location.url())
         if(!!match) {
             if(!$scope.feeds.categories.objects) return
+
             let feed = null, feedId = parseInt(match[1])
-            $scope.feeds.categories.objects.forEach((category) => {
-                category.feeds.forEach((_feed) => {
+            $scope.feeds.categories.objects.forEach(category => {
+                category.feeds.forEach(_feed => {
                     if(_feed.id === feedId) {
                         feed = _feed
                     }
@@ -115,7 +115,7 @@ App.controller("RSSCtrl", function($scope, $http, $sce, $uibModal, $location) {
             })
             $scope.feeds.selected = feed
             $http.get(`/api/entry/?feed=${feed.id}`)
-                .then(function(res) {
+                .then(res => {
                     $scope.feeds.entries.list = res.data
                     $scope.feeds.entries.current = null
                 })
@@ -125,12 +125,12 @@ App.controller("RSSCtrl", function($scope, $http, $sce, $uibModal, $location) {
     }
 
     let initialLoading = true
-    $scope.loadCategories = function (quiet) {
+    $scope.loadCategories = quiet => {
         quiet = typeof quiet !== "undefined" ? quiet : true
 
         $scope.loading = !quiet
         $http.get("/api/category/")
-            .then(function(res) {
+            .then(res => {
                 $scope.failedLoadCategories = false
                 $scope.feeds.categories = res.data
                 $scope.loading = false
@@ -140,7 +140,7 @@ App.controller("RSSCtrl", function($scope, $http, $sce, $uibModal, $location) {
                     $scope.$on("$locationChangeSuccess", onChangeFeed)
                 }
                 setTimeout($scope.loadCategories, 60000)
-            }, function(data) {
+            }, data => {
                 $scope.failedLoadCategories = true
                 console.error("Error loading data", data)
                 $scope.loading = false
@@ -148,39 +148,35 @@ App.controller("RSSCtrl", function($scope, $http, $sce, $uibModal, $location) {
     }
     $scope.loadCategories(false)
 
-    $scope.loadCategoriesFn = function (e) {
+    $scope.loadCategoriesFn = e => {
         e.preventDefault()
         $scope.loadCategories(false)
         $scope.failedLoadCategories = false
     }
 
-    $scope.$watch("feeds.entries.current", function() {
-        if (!$scope.feeds.entries.current) return
+    $scope.$watch("feeds.entries.current", entry => {
+        if (!entry) return
 
-        $scope.feeds.entries.current.new_entry = false
-
-        $http.get(`/api/entry/${$scope.feeds.entries.current.id}`)
-            .then(function(res) {
-                let feed, feeds = []
-
-                $scope.feeds.categories.objects.forEach((category) => {
+        if (entry.new_entry) {
+            feed.un_read -= 1
+            entry.new_entry = false
+        }
+        $http.get(`/api/entry/${entry.id}`)
+            .then(() => {
+                let feeds = []
+                $scope.feeds.categories.objects.forEach(category => {
                     feeds.push.apply(feeds, category.feeds)
                 })
 
-                window.o = $scope.feeds.categories.objects
-                feed = feeds.find((obj) => obj.id === $scope.feeds.entries.current.feed.id)
-
-                if (feed)
-                    feed.un_read -= 1
-
-                if (!$scope.feeds.entries.current.read_at)
-                    $scope.feeds.entries.current.read_at = new Date()
+                let feed = feeds.find(obj => obj.id === $scope.feeds.entries.current.feed.id)
+                if (entry.new_entry) feed.un_read -= 1
+                if (!entry.read_at) entry.read_at = new Date()
             })
     })
 
-    $scope.loadMore = function(feedUrl) {
+    $scope.loadMore = feedUrl => {
         $http.get(feedUrl)
-            .then(function(res) {
+            .then(res => {
                 let feedEntries = $scope.feeds.entries.list.objects
                 feedEntries.push.apply(feedEntries, res.data.objects)
                 $scope.feeds.entries.list.objects = feedEntries
@@ -190,29 +186,27 @@ App.controller("RSSCtrl", function($scope, $http, $sce, $uibModal, $location) {
 
     $scope.safe = $sce.trustAsHtml
 
-    $scope.doSearch = function() {
+    $scope.doSearch = () => {
         $scope.loading = true
         $http.get(`/api/entry/?title__ilike=%${$scope.search}%`)
-            .then(function(res) {
+            .then(res => {
                 $scope.feeds.entries.list = res.data
                 $scope.feeds.selected = null
                 $scope.feeds.search = true
                 $scope.feeds.entries.current = null
                 $scope.loading = false
-            }, function (err) {
+            }, err => {
                 alert("Error fetching search results.")
                 console.error(err)
                 $scope.loading = false
             })
 
     }
-}).controller("RSSAddEditCategoryCtrl",
-function($scope, $uibModalInstance, $http, category, parentScope) {
-    "use strict"
+}).controller("RSSAddEditCategoryCtrl", ($scope, $uibModalInstance, $http, category, parentScope) => {
     $scope.category = category
     $scope.form = angular.copy(category)
 
-    $scope.save = function() {
+    $scope.save = () => {
         let method
         if (category.id === undefined) {
             method = $http.post(
@@ -226,20 +220,16 @@ function($scope, $uibModalInstance, $http, category, parentScope) {
             )
         }
 
-        method.then(function(res) {
+        method.then(() => {
             parentScope.loadCategories(false)
             $uibModalInstance.close()
-        }, function() {
+        }, () => {
             $scope.error = "Something went wrong"
         })
     }
 
-    $scope.cancel = function() {
-        $uibModalInstance.dismiss()
-    }
-}).controller("RSSCreateFeedCtrl",
-function($scope, $uibModalInstance, $http, category, parentScope) {
-    "use strict"
+    $scope.cancel = $uibModalInstance.dismiss
+}).controller("RSSCreateFeedCtrl", ($scope, $uibModalInstance, $http, category, parentScope) => {
     $scope.form = {feed_url: "", category: ""}
 
     if (category !== undefined && category)
@@ -247,73 +237,61 @@ function($scope, $uibModalInstance, $http, category, parentScope) {
 
     $scope.categories = parentScope.feeds.categories.objects
 
-    $scope.save = function() {
+    $scope.save = () => {
         $http.post("/api/feed/", $scope.form)
-            .then(function(res) {
+            .then(() => {
                 parentScope.loadCategories(false)
                 $uibModalInstance.close()
-            }, function() {
+            }, () => {
                 $scope.error = "Something went wrong"
             })
     }
 
-    $scope.cancel = function() {
-        $uibModalInstance.dismiss()
-    }
-}).controller("RSSUpdateFeedCtrl",
-function($scope, $uibModalInstance, $http, feed, parentScope) {
-    "use strict"
+    $scope.cancel = $uibModalInstance.dismiss
+}).controller("RSSUpdateFeedCtrl", ($scope, $uibModalInstance, $http, feed, parentScope) => {
     $scope.categories = parentScope.feeds.categories.objects
     $scope.form = angular.copy(feed)
     $scope.form.category = $scope.categories.filter(c => c.id === feed.category)[0]
     delete $scope.form.un_read
     delete $scope.form.new_entries
 
-    $scope.save = function() {
+    $scope.save = () => {
         let formData = angular.copy($scope.form)
         formData.category = $scope.form.category.id
         $http.put(`/api/feed/${feed.id}/`, formData)
-            .then(function(res) {
+            .then(() => {
                 parentScope.loadCategories(false)
                 $uibModalInstance.close()
-            }, function() {
+            }, () => {
                 $scope.error = "Something went wrong"
             })
     }
 
     $scope.cancel = $uibModalInstance.dismiss
-}).controller("RSSDeleteCategoryCtrl",
-function($scope, $uibModalInstance, $http, category, parentScope) {
-    "use strict"
+}).controller("RSSDeleteCategoryCtrl", ($scope, $uibModalInstance, $http, category, parentScope) => {
     $scope.category = category
-    $scope.ok = function() {
+    $scope.ok = () => {
         $http.delete(`/api/category/${category.id}/`)
-            .then(function(res) {
+            .then(() => {
                 parentScope.loadCategories(false)
                 $uibModalInstance.close()
-            }, function() {
+            }, () => {
                 $scope.error = "Something went wrong"
             })
     }
 
-    $scope.cancel = function() {
-        $uibModalInstance.dismiss()
-    }
-}).controller("RSSDeleteFeedCtrl",
-function($scope, $uibModalInstance, $http, feed, parentScope) {
-    "use strict"
+    $scope.cancel = () => $uibModalInstance.dismiss
+}).controller("RSSDeleteFeedCtrl", ($scope, $uibModalInstance, $http, feed, parentScope) => {
     $scope.feed = feed
-    $scope.ok = function() {
+    $scope.ok = () => {
         $http.delete(`/api/feed/${feed.id}/`)
-            .then(function(res) {
+            .then(() => {
                 parentScope.loadCategories(false)
                 $uibModalInstance.close()
-            }, function() {
+            }, () => {
                 $scope.error = "Something went wrong"
             })
     }
 
-    $scope.cancel = function() {
-        $uibModalInstance.dismiss()
-    }
+    $scope.cancel = $uibModalInstance.dismiss
 })
