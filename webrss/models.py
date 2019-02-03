@@ -38,7 +38,7 @@ class Category(BaseModel):
         """
         :rtype : list[Feed]
         """
-        return self.feed_set.where(Feed.deleted_at.__eq__(None))
+        return self.feed_set.where(Feed.deleted_at.is_null(True))
 
     def prev_by_order(self):
         """
@@ -47,7 +47,7 @@ class Category(BaseModel):
         try:
             return Category.select() \
                 .where(Category.order < self.order) \
-                .where(Category.deleted_at.__eq__(None)) \
+                .where(Category.deleted_at.is_null(True)) \
                 .order_by(Category.order.desc()) \
                 .limit(1)[0]
         except IndexError:
@@ -60,7 +60,7 @@ class Category(BaseModel):
         try:
             return Category.select() \
                 .where(Category.order > self.order) \
-                .where(Category.deleted_at.__eq__(None)) \
+                .where(Category.deleted_at.is_null(True)) \
                 .order_by(Category.order.asc()) \
                 .limit(1)[0]
         except IndexError:
@@ -82,7 +82,7 @@ class Category(BaseModel):
     @classmethod
     def select(cls, *selection):
         select = super(Category, cls).select(*selection)
-        return select.where(cls.deleted_at.__eq__(None))
+        return select.where(cls.deleted_at.is_null(True))
 
 
 class Feed(BaseModel):
@@ -123,7 +123,7 @@ class Feed(BaseModel):
         """
         if not self._count_un_read:
             self._count_un_read = self.entry_set.where(
-                Entry.read_at.__eq__(None)
+                Entry.read_at.is_null(True)
             ).count()
 
         return self._count_un_read
@@ -140,7 +140,7 @@ class Feed(BaseModel):
     @classmethod
     def select(cls, *selection):
         select = super(Feed, cls).select(*selection)
-        return select.where(cls.deleted_at.__eq__(None))
+        return select.where(cls.deleted_at.is_null(True))
 
     def has_new_entries(self, entry_last_published_at):
         if entry_last_published_at is not None:
@@ -177,3 +177,13 @@ class Entry(BaseModel):
     def is_read(self):
         """ Is this entry read? """
         return self.read_at is not None
+
+    @classmethod
+    def select(cls, *selection):
+        categories = Category.select().where(Category.deleted_at.is_null(True))
+        return super(Entry, cls)\
+            .select(*selection)\
+            .join(Feed)\
+            .where(Feed.category.in_(categories))\
+            .where(Feed.deleted_at.is_null(True))\
+            .where(cls.deleted_at.is_null(True))

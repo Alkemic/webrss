@@ -136,11 +136,6 @@ class EntryResource(RestResource):
         data['published_at'] = obj.published_at.strftime("%Y-%m-%d %H:%M")
         return super(EntryResource, self).prepare_data(obj, data)
 
-    def get_query(self):
-        return self.model.select().join(Feed).where(
-            Feed.deleted_at.is_null(True)
-        )
-
     def object_list(self):
         object_list = super(EntryResource, self).object_list()
 
@@ -170,41 +165,6 @@ def index():
     """Index view"""
     return render_template('index.html')
 
-
-@app.route("/api/search", methods=["GET"])
-@jsonify
-def search():
-    phrase = request.args["phrase"]
-    if not phrase:
-        return []
-
-    phrase = "%{}%".format(phrase)
-    try:
-        page = int(request.args.get("page", 1))
-        page = page if page > 0 else 1
-    except ValueError:
-        page = 1
-
-    categories = Category.select().where(Category.deleted_at.is_null(True))
-    entries = Entry.select()\
-        .join(Feed)\
-        .where(Feed.category.in_(categories))\
-        .where(Feed.deleted_at.is_null(True))\
-        .where((Entry.title ** phrase) | (Entry.summary ** phrase))\
-        .where(Entry.deleted_at.is_null(True))\
-        .offset((page-1)*PER_PAGE)\
-        .limit(PER_PAGE)
-
-    query_params = request.args.to_dict()
-    query_params.update({"page": page+1})
-    data = {
-        "objects": [model_to_dict(entry) for entry in entries],
-        "meta": {},
-    }
-    print len(data["objects"])
-    if len(data["objects"]) == PER_PAGE:
-        data["meta"]["next"] = "/api/search?{}".format(urlencode(query_params))
-    return data
 
 @app.route('/api/category/<int:pk>/move_up', methods=['POST'])
 @jsonify
