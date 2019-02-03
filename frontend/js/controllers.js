@@ -100,9 +100,8 @@ App.controller("RSSCtrl", ($scope, $http, $sce, $uibModal, $location) => {
         if ($location.url() !== slug) $location.url(slug)
     })
 
-    let onChangeFeed = () => {
-        let match = /^\/(\d+)-.*/.exec($location.url())
-        if (!!match) {
+    let onChangeUrl = () => {
+        if (!!(match = /^\/(\d+)-.*/.exec($location.url()))) {
             if (!$scope.feeds.categories.objects) return
 
             let feed = null, feedId = parseInt(match[1])
@@ -122,6 +121,23 @@ App.controller("RSSCtrl", ($scope, $http, $sce, $uibModal, $location) => {
         } else {
             $scope.feeds.selected = null
         }
+
+        if (!!(match = /^\/search=(.*)/.exec($location.url()))) {
+            let phrase = match[1]
+            $scope.loading = true
+            $http.get(`/api/entry/?title__ilike=%${phrase}%`)
+                .then(res => {
+                    $scope.feeds.entries.list = res.data
+                    $scope.feeds.selected = null
+                    $scope.feeds.search = true
+                    $scope.feeds.entries.current = null
+                    $scope.loading = false
+                }, err => {
+                    alert("Error fetching search results.")
+                    console.error(err)
+                    $scope.loading = false
+                })
+        }
     }
 
     let initialLoading = true
@@ -135,9 +151,9 @@ App.controller("RSSCtrl", ($scope, $http, $sce, $uibModal, $location) => {
                 $scope.feeds.categories = res.data
                 $scope.loading = false
                 if (initialLoading) {
-                    onChangeFeed()
+                    onChangeUrl()
                     initialLoading = false
-                    $scope.$on("$locationChangeSuccess", onChangeFeed)
+                    $scope.$on("$locationChangeSuccess", onChangeUrl)
                 }
                 setTimeout($scope.loadCategories, 60000)
             }, data => {
@@ -187,20 +203,8 @@ App.controller("RSSCtrl", ($scope, $http, $sce, $uibModal, $location) => {
     $scope.safe = $sce.trustAsHtml
 
     $scope.doSearch = () => {
-        $scope.loading = true
-        $http.get(`/api/entry/?title__ilike=%${$scope.search}%`)
-            .then(res => {
-                $scope.feeds.entries.list = res.data
-                $scope.feeds.selected = null
-                $scope.feeds.search = true
-                $scope.feeds.entries.current = null
-                $scope.loading = false
-            }, err => {
-                alert("Error fetching search results.")
-                console.error(err)
-                $scope.loading = false
-            })
-
+        if (!$scope.search) return
+        $location.url(`search=${$scope.search}`)
     }
 }).controller("RSSAddEditCategoryCtrl", ($scope, $uibModalInstance, $http, category, parentScope) => {
     $scope.category = category
