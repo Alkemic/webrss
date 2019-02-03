@@ -1,20 +1,19 @@
-var App = angular.module('webrssApp');
-
-App.directive('feedSelect', function() {
+App.directive("feedSelect", () => {
+    "use strict"
     return {
         transclude: false,
-        restrict: 'E',
+        restrict: "E",
         scope: {
-            feeds: '=',
-            selected: '=ngModel',
-            updateAction: '=',
-            deleteAction: '=',
+            feeds: "=",
+            selected: "=ngModel",
+            updateAction: "=",
+            deleteAction: "="
         },
-        templateUrl: 'feed-select.html',
-        controller: function($scope) {
-            $scope.doSelect = function(feed) {
-                $scope.selected = feed;
-            };
+        templateUrl: "feed-select.html",
+        controller: ($scope) => {
+            $scope.doSelect = (feed) => {
+                $scope.selected = feed
+            }
         },
-    };
-});
+    }
+})

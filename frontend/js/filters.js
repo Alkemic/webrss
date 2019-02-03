@@ -1,10 +1,8 @@
-var App = angular.module('webrssApp');
-
-App.filter('stripTags', function() {
-    return function(text) {
+App.filter("stripTags", () => {
+    return (text) => {
         if (!text) {
-            return '';
+            return ""
         }
-        return String(text).replace(/<[^>]+>/gm, '').replace(/&[^;]+;/gm, '');
-    };
-});
+        return String(text).replace(/<[^>]+>/gm, "").replace(/&[^;]+;/gm, "")
+    }
+})

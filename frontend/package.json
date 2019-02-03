@@ -25,5 +25,8 @@
     "jquery": "3.2.1",
     "less-plugin-clean-css": "1.5.1",
     "underscore": "1.8.3"
+  },
+  "devDependencies": {
+    "eslint": "5.13.0"
   }
 }
