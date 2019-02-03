@@ -2,12 +2,14 @@
 """Feed related views"""
 import base64
 from datetime import datetime
+from urllib import urlencode
 
 import feedparser
 from flask import render_template
 from flask import request
 from flask_peewee.rest import RestResource
 import peewee
+from playhouse.shortcuts import model_to_dict
 
 from functions import get_favicon_url
 from . import DATABASE
@@ -16,7 +18,7 @@ from .main import app, rest_api
 from .decorators import jsonify
 from .functions import get_favicon, process_feed, to_datetime
 
-
+PER_PAGE = 50
 ENTRY_LAST_PUBLISHED_AT_SQL = """
 select
     f.id,
@@ -30,7 +32,7 @@ where f.deleted_at is null;
 """
 
 
-RestResource.paginate_by = 50
+RestResource.paginate_by = PER_PAGE
 RestResource.authorize = lambda *args, **kwargs: True
 
 
@@ -169,18 +171,40 @@ def index():
     return render_template('index.html')
 
 
+@app.route("/api/search", methods=["GET"])
 @jsonify
-@app.route('/api/search', methods=['POST'])
 def search():
-    """Return search result"""
-    phrase = '%%%s%%' % request.form['phrase']
+    phrase = request.args["phrase"]
+    if not phrase:
+        return []
 
+    phrase = "%{}%".format(phrase)
+    try:
+        page = int(request.args.get("page", 1))
+        page = page if page > 0 else 1
+    except ValueError:
+        page = 1
+
+    categories = Category.select().where(Category.deleted_at.is_null(True))
     entries = Entry.select()\
+        .join(Feed)\
+        .where(Feed.category.in_(categories))\
+        .where(Feed.deleted_at.is_null(True))\
         .where((Entry.title ** phrase) | (Entry.summary ** phrase))\
-        .where(Entry.deleted_at.__eq__(None))
+        .where(Entry.deleted_at.is_null(True))\
+        .offset((page-1)*PER_PAGE)\
+        .limit(PER_PAGE)
 
-    return render_template('search.html', entries=list(entries))
-
+    query_params = request.args.to_dict()
+    query_params.update({"page": page+1})
+    data = {
+        "objects": [model_to_dict(entry) for entry in entries],
+        "meta": {},
+    }
+    print len(data["objects"])
+    if len(data["objects"]) == PER_PAGE:
+        data["meta"]["next"] = "/api/search?{}".format(urlencode(query_params))
+    return data
 
 @app.route('/api/category/<int:pk>/move_up', methods=['POST'])
 @jsonify
