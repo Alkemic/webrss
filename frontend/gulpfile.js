@@ -4,7 +4,6 @@ const gulp = require("gulp")
 const less = require("gulp-less")
 const concat = require("gulp-concat")
 const autoprefixer = require("gulp-autoprefixer")
-const ngAnnotate = require("gulp-ng-annotate")
 const del = require("del")
 const LessPluginCleanCSS = require("less-plugin-clean-css")
 const cleancss = new LessPluginCleanCSS({advanced: true})
@@ -41,9 +40,11 @@ gulp.task("styles", () => gulp
 gulp.task("scripts", () => gulp
     .src(config.scripts.src)
     .pipe(gulpIf(!production, sourcemaps.init()))
-    .pipe(ngAnnotate())
     .pipe(concat(config.scripts.out))
-    .pipe(gulpIf(production, babel({presets: ["babili"]})))
+    .pipe(gulpIf(production, babel({
+        "presets": ["babili"],
+        "plugins": ["angularjs-annotate"]
+    })))
     .pipe(gulpIf(!production, sourcemaps.write()))
     .pipe(gulp.dest(config.scripts.dest))
 )
@@ -51,9 +52,11 @@ gulp.task("scripts", () => gulp
 gulp.task("vendorScripts", () => gulp
     .src(config.vendorScripts.src)
     .pipe(gulpIf(!production, sourcemaps.init()))
-    .pipe(ngAnnotate())
     .pipe(concat(config.vendorScripts.out))
-    .pipe(gulpIf(production, babel({presets: ["babili"]})))
+    .pipe(gulpIf(production, babel({
+        "presets": ["babili"],
+        "plugins": ["angularjs-annotate"]
+    })))
     .pipe(gulpIf(!production, sourcemaps.write()))
     .pipe(gulp.dest(config.vendorScripts.dest))
 )
