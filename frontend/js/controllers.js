@@ -173,21 +173,14 @@ App.controller("RSSCtrl", ($scope, $http, $sce, $uibModal, $location) => {
     $scope.$watch("feeds.entries.current", entry => {
         if (!entry) return
 
+        if (!entry.read_at) {
+            entry.read_at = new Date()
+            $scope.feeds.selected.un_read -= 1
+        }
         if (entry.new_entry) {
-            feed.un_read -= 1
             entry.new_entry = false
         }
         $http.get(`/api/entry/${entry.id}`)
-            .then(() => {
-                let feeds = []
-                $scope.feeds.categories.objects.forEach(category => {
-                    feeds.push.apply(feeds, category.feeds)
-                })
-
-                let feed = feeds.find(obj => obj.id === $scope.feeds.entries.current.feed.id)
-                if (entry.new_entry) feed.un_read -= 1
-                if (!entry.read_at) entry.read_at = new Date()
-            })
     })
 
     $scope.loadMore = feedUrl => {
