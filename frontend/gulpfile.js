@@ -14,17 +14,17 @@ const babel = require("gulp-babel")
 
 const production = typeof process.env.PRODUCTION !== "undefined" && process.env.PRODUCTION === "true"
 
-gulp.task("templates", () => gulp
+const templates = () => gulp
     .src(config.templates.src)
     .pipe(ngTemplates({
         filename: config.templates.out,
         module: config.templates.moduleName,
-        path: (path, base) => path.replace(base, ""),
+        path: (path, base) => path.replace(base+"/", ""),
     }))
     .pipe(gulp.dest(config.templates.dest))
-)
 
-gulp.task("styles", () => gulp
+
+const styles = () => gulp
     .src(config.styles.src)
     .pipe(gulpIf(!production, sourcemaps.init()))
     .pipe(less({
@@ -35,9 +35,9 @@ gulp.task("styles", () => gulp
     .pipe(concat(config.styles.out))
     .pipe(gulpIf(!production, sourcemaps.write()))
     .pipe(gulp.dest(config.styles.dest))
-)
 
-gulp.task("scripts", () => gulp
+
+const scripts = () => gulp
     .src(config.scripts.src)
     .pipe(gulpIf(!production, sourcemaps.init()))
     .pipe(concat(config.scripts.out))
@@ -47,9 +47,9 @@ gulp.task("scripts", () => gulp
     })))
     .pipe(gulpIf(!production, sourcemaps.write()))
     .pipe(gulp.dest(config.scripts.dest))
-)
 
-gulp.task("vendorScripts", () => gulp
+
+const vendorScripts = () => gulp
     .src(config.vendorScripts.src)
     .pipe(gulpIf(!production, sourcemaps.init()))
     .pipe(concat(config.vendorScripts.out))
@@ -59,22 +59,34 @@ gulp.task("vendorScripts", () => gulp
     })))
     .pipe(gulpIf(!production, sourcemaps.write()))
     .pipe(gulp.dest(config.vendorScripts.dest))
-)
 
-gulp.task("copy", () => config.copy.forEach(row => {
-    gulp.src(row[0]).pipe(gulp.dest(row[1]))
-}))
 
-gulp.task("clean", (cb) => {
+const copy = (cb) => {
+    config.copy.forEach(file => gulp.src(file.src).pipe(gulp.dest(file.dest)))
+    cb()
+}
+
+const clean = (cb) => {
     del(config.clean, {force: true}).then(paths => cb())
-})
+}
 
-gulp.task("build", ["styles", "vendorScripts", "scripts", "templates", "copy"])
+const build = gulp.series(clean, gulp.parallel(styles, vendorScripts, scripts, templates, copy))
 
-gulp.task("watch", ["build"], () => {
-    gulp.watch(config.styles.src, ["styles"])
-    gulp.watch(config.vendorScripts.src, ["vendorScripts"])
-    gulp.watch(config.scripts.src, ["scripts"])
-    gulp.watch(config.templates.src, ["templates"])
-    gulp.watch(config.copy.map(el => el[0]), ["copy"])
-})
+const watch = () => {
+    gulp.watch(config.styles.src, styles)
+    gulp.watch(config.vendorScripts.src, vendorScripts)
+    gulp.watch(config.scripts.src, scripts)
+    gulp.watch(config.templates.src, templates)
+    gulp.watch(config.copy.map(el => el.src), copy)
+}
+
+exports.clean = clean
+exports.styles = styles
+// exports.vendorStyles = vendorStyles
+exports.templates = templates
+exports.scripts = scripts
+exports.vendorScripts = vendorScripts
+exports.copy = copy
+exports.watch = watch
+exports.build = build
+exports.default = build

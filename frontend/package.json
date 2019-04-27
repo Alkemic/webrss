@@ -6,26 +6,27 @@
   "author": "Daniel Alkemic Czuba <alkemic7@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "angular": "1.6.4",
-    "angular-resource": "1.6.4",
-    "angular-sanitize": "1.6.4",
-    "angular-ui-bootstrap": "2.5.0",
-    "babel-plugin-angularjs-annotate": "0.10.0",
-    "babili": "0.1.4",
-    "bootstrap": "3.3.7",
-    "del": "3.0.0",
-    "gulp": "3.9.1",
-    "gulp-autoprefixer": "4.0.0",
-    "gulp-babel": "7.0.0",
-    "gulp-concat": "2.6.1",
-    "gulp-if": "2.0.2",
-    "gulp-less": "3.3.2",
-    "gulp-ng-templates": "0.0.10",
-    "gulp-sourcemaps": "2.6.0",
-    "jquery": "3.2.1",
-    "less-plugin-clean-css": "1.5.1"
+    "angular": "1.7.8",
+    "angular-resource": "1.7.8",
+    "angular-sanitize": "1.7.8",
+    "angular-ui-bootstrap": "2.5.6",
+    "bootstrap": "3.4.1",
+    "jquery": "3.4.0"
   },
   "devDependencies": {
-    "eslint": "5.13.0"
+    "@babel/core": "7.4.4",
+    "babel-plugin-angularjs-annotate": "0.10.0",
+    "babili": "0.1.4",
+    "del": "4.1.0",
+    "eslint": "5.16.0",
+    "gulp": "4.0.1",
+    "gulp-autoprefixer": "6.1.0",
+    "gulp-babel": "8.0.0",
+    "gulp-concat": "2.6.1",
+    "gulp-if": "2.0.2",
+    "gulp-less": "4.0.1",
+    "gulp-ng-templates": "1.0.2",
+    "gulp-sourcemaps": "2.6.5",
+    "less-plugin-clean-css": "1.5.1"
   }
 }
