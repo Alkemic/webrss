@@ -42,7 +42,7 @@ const scripts = () => gulp
     .pipe(gulpIf(!production, sourcemaps.init()))
     .pipe(concat(config.scripts.out))
     .pipe(gulpIf(production, babel({
-        "presets": ["babili"],
+        "presets": ["minify", {comments: false}],
         "plugins": ["angularjs-annotate"]
     })))
     .pipe(gulpIf(!production, sourcemaps.write()))
@@ -54,7 +54,7 @@ const vendorScripts = () => gulp
     .pipe(gulpIf(!production, sourcemaps.init()))
     .pipe(concat(config.vendorScripts.out))
     .pipe(gulpIf(production, babel({
-        "presets": ["babili"],
+        "presets": ["minify", {comments: false}],
         "plugins": ["angularjs-annotate"]
     })))
     .pipe(gulpIf(!production, sourcemaps.write()))
