@@ -5,14 +5,14 @@
     <title>WebRSS</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" >
-    <link href="{{ url_for('static', filename='css/webrss.css') }}" rel="stylesheet" />
+    <link rel="shortcut icon" href="/static/images/favicon.ico" >
+    <link href="/static/css/webrss.css" rel="stylesheet" />
 
-    <script src="{{ url_for('static', filename='js/vendor.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/webrss.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/webrss.templates.js') }}"></script>
+    <script src="/static/js/vendor.js"></script>
+    <script src="/static/js/webrss.js"></script>
+    <script src="/static/js/webrss.templates.js"></script>
 </head>
-{% raw %}
+
 <body ng-app="webrssApp" ng-controller="RSSCtrl">
     <div ng-if="failedLoadCategories" class="alert alert-danger alert-dismissible failed-load-categories">
         <button type="button" class="close" data-dismiss="alert">×</button>
@@ -139,4 +139,3 @@
     </div><!-- /#wrap -->
 </body>
 </html>
-{% endraw %}
