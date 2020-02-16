@@ -2,6 +2,7 @@ package webrss
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Alkemic/webrss/repository"
 )
@@ -13,6 +14,8 @@ type categoryRepository interface {
 	Update(repository.Category) error
 	GetNextByOrder(repository.Category) (repository.Category, error)
 	GetPrevByOrder(repository.Category) (repository.Category, error)
+	Create(repository.Category) error
+	SelectMaxOrder() (int, error)
 }
 
 type feedRepository interface {
@@ -64,6 +67,19 @@ func (s CategoryService) List(params ...string) ([]repository.Category, error) {
 		}
 	}
 	return categories, nil
+}
+
+func (s CategoryService) Create(category repository.Category) error {
+	category.CreatedAt.Time = time.Now()
+	maxOrder, err := s.categoryRepository.SelectMaxOrder()
+	if err != nil {
+		return fmt.Errorf("error fetching max order for category: %w", err)
+	}
+	category.Order = maxOrder + 1
+	if err := s.categoryRepository.Create(category); err != nil {
+		return fmt.Errorf("error creating category: %w", err)
+	}
+	return nil
 }
 
 func (s CategoryService) Delete(id int64) error {
