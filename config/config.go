@@ -1,10 +1,13 @@
 package config
 
 import (
+	"fmt"
 	"io/ioutil"
 
 	"gopkg.in/yaml.v2"
 )
+
+const defaultPerPage = 50
 
 type configRun struct {
 	Host string
@@ -26,6 +29,8 @@ type configDB struct {
 type Config struct {
 	DB  configDB
 	Run configRun
+
+	PerPage int64
 }
 
 func LoadConfig(configFile string) (*Config, error) {
@@ -36,6 +41,13 @@ func LoadConfig(configFile string) (*Config, error) {
 		return nil, err
 	}
 
-	err = yaml.Unmarshal(data, &config)
-	return &config, err
+	if err = yaml.Unmarshal(data, &config); err != nil {
+		return nil, fmt.Errorf("cannot parse config file: %w", err)
+	}
+
+	if config.PerPage == 0 {
+		config.PerPage = defaultPerPage
+	}
+
+	return &config, nil
 }

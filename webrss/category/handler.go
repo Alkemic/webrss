@@ -5,9 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Alkemic/go-route/middleware"
-
 	"github.com/Alkemic/go-route"
+	"github.com/Alkemic/go-route/middleware"
 
 	"github.com/Alkemic/webrss/repository"
 	"github.com/Alkemic/webrss/webrss"
@@ -46,28 +45,19 @@ func (h *restHandler) List(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (h *restHandler) Create(rw http.ResponseWriter, req *http.Request) {}
-
-func (h *restHandler) Get(rw http.ResponseWriter, req *http.Request)    {}
-func (h *restHandler) Delete(rw http.ResponseWriter, req *http.Request) {}
-
 func (h *restHandler) GetRoutes() route.RegexpRouter {
-	categoryResource := webrss.RESTEndPoint{
-		Get:    h.Get,
-		Delete: h.Delete,
-	}
-	categoryCollection := webrss.RESTEndPoint{
+	resource := webrss.RESTEndPoint{}
+	collection := webrss.RESTEndPoint{
 		Get: h.List,
 	}
 
-	headers := map[string]string{
+	setHeaders := middleware.SetHeaders(map[string]string{
 		"Content-Type": "application/json; charset=utf-8",
-	}
-	setHeaders := middleware.SetHeaders(headers)
+	})
 
-	categoryRouting := route.RegexpRouter{}
-	categoryRouting.Add(`^/?$`, setHeaders(categoryCollection.Dispatch))
-	categoryRouting.Add(`^/(?P<id>\d+)/$`, setHeaders(categoryResource.Dispatch))
+	routing := route.RegexpRouter{}
+	routing.Add(`^/?$`, setHeaders(collection.Dispatch))
+	routing.Add(`^/(?P<id>\d+)/$`, setHeaders(resource.Dispatch))
 
-	return categoryRouting
+	return routing
 }

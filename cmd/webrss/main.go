@@ -18,6 +18,7 @@ import (
 	"github.com/Alkemic/webrss/repository"
 	"github.com/Alkemic/webrss/webrss"
 	"github.com/Alkemic/webrss/webrss/category"
+	"github.com/Alkemic/webrss/webrss/entry"
 )
 
 var (
@@ -41,11 +42,15 @@ func main() {
 
 	categoryRepository := repository.NewCategoryRepository(db)
 	feedRepository := repository.NewFeedRepository(db)
-	columnService := webrss.NewCategoryService(categoryRepository, feedRepository)
-	categoryHandler := category.NewHandler(columnService, logger)
+	entryRepository := repository.NewEntryRepository(db, cfg.PerPage)
+	categoryService := webrss.NewCategoryService(categoryRepository, feedRepository)
+	categoryHandler := category.NewHandler(categoryService, logger)
+	entryService := webrss.NewEntryService(entryRepository, feedRepository)
+	entryHandler := entry.NewHandler(entryService, logger)
 
 	routes := route.RegexpRouter{}
 	routes.Add("^/api/category", categoryHandler.GetRoutes())
+	routes.Add("^/api/entry", entryHandler.GetRoutes())
 	routes.Add("^/favicon.ico$", favicon)
 	routes.Add("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("webrss/static"))))
 	routes.Add("/", index)

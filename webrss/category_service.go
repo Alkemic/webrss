@@ -16,10 +16,9 @@ type categoryRepository interface {
 }
 
 type feedRepository interface {
+	Get(id int64) (repository.Feed, error)
 	ListForCategories([]int64) ([]repository.Feed, error)
-	Get(int64) (repository.Feed, error)
-	Delete(int64) error
-	Update(repository.Feed) error
+	Update(entry repository.Feed) error
 }
 
 type CategoryService struct {
