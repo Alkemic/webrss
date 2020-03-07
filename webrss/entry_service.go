@@ -11,6 +11,7 @@ type entryRepository interface {
 	Get(id int64) (repository.Entry, error)
 	ListForFeed(feedID, page int64) ([]repository.Entry, error)
 	Update(entry repository.Entry) error
+	Create(entry repository.Entry) error
 }
 
 type EntryService struct {

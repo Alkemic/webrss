@@ -13,6 +13,13 @@ type NullString struct {
 	sql.NullString
 }
 
+func NewNullString(value string) NullString {
+	return NullString{NullString: sql.NullString{
+		String: value,
+		Valid:  true,
+	}}
+}
+
 func (ni NullString) MarshalJSON() ([]byte, error) {
 	if !ni.Valid {
 		return []byte("null"), nil
@@ -34,6 +41,10 @@ func (nt NullTime) MarshalJSON() ([]byte, error) {
 // A Time struct wraps time.Time, so can be used with sql and custom marshaling.
 type Time struct {
 	time.Time
+}
+
+func NewTime(value time.Time) Time {
+	return Time{Time: value}
 }
 
 // Scan implements the Scanner interface.

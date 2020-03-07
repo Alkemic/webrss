@@ -39,6 +39,7 @@ func (h *restHandler) List(rw http.ResponseWriter, req *http.Request) {
 	categories, err := h.categoryService.List()
 	if err != nil {
 		h.logger.Println("cannot fetch categories: ", err)
+		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 	data := map[string]interface{}{
@@ -62,7 +63,7 @@ func (h *restHandler) Create(rw http.ResponseWriter, req *http.Request) {
 	}
 	newCategory := Category{}
 	if err := json.Unmarshal(body, &newCategory); err != nil {
-		h.logger.Println("can't unmarshal bod: ", err)
+		h.logger.Println("can't unmarshal body: ", err)
 		http.Error(rw, "can't unmarshal body", http.StatusBadRequest)
 		return
 	}

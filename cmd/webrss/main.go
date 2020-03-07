@@ -13,12 +13,15 @@ import (
 	"github.com/Alkemic/go-route/middleware"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	"github.com/mmcdole/gofeed"
 
 	"github.com/Alkemic/webrss/config"
+	"github.com/Alkemic/webrss/feed_fetcher"
 	"github.com/Alkemic/webrss/repository"
 	"github.com/Alkemic/webrss/webrss"
 	"github.com/Alkemic/webrss/webrss/category"
 	"github.com/Alkemic/webrss/webrss/entry"
+	"github.com/Alkemic/webrss/webrss/feed"
 )
 
 var (
@@ -40,6 +43,9 @@ func main() {
 	}
 	defer closeFn()
 
+	fp := gofeed.NewParser()
+	feedFetcher := feed_fetcher.NewFeedParser(fp, &http.Client{})
+
 	categoryRepository := repository.NewCategoryRepository(db)
 	feedRepository := repository.NewFeedRepository(db)
 	entryRepository := repository.NewEntryRepository(db, cfg.PerPage)
@@ -47,10 +53,13 @@ func main() {
 	categoryHandler := category.NewHandler(categoryService, logger)
 	entryService := webrss.NewEntryService(entryRepository, feedRepository)
 	entryHandler := entry.NewHandler(entryService, logger)
+	feedService := webrss.NewFeedService(feedRepository, entryRepository, feedFetcher)
+	feedHandler := feed.NewHandler(logger, feedService)
 
 	routes := route.RegexpRouter{}
 	routes.Add("^/api/category", categoryHandler.GetRoutes())
 	routes.Add("^/api/entry", entryHandler.GetRoutes())
+	routes.Add("^/api/feed", feedHandler.GetRoutes())
 	routes.Add("^/favicon.ico$", favicon)
 	routes.Add("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("webrss/static"))))
 	routes.Add("/", index)

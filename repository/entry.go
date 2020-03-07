@@ -19,6 +19,8 @@ update entry
 set title = :title, author = :author, summary = :summary, link = :link, published_at = :published_at, 
 feed_id = :feed_id, read_at = :read_at, created_at = :created_at, updated_at = :updated_at, deleted_at = :deleted_at 
 where id = :id and deleted_at is null;`
+	createEntryQuery = `insert into entry(title, author, summary, link, published_at, feed_id, read_at, created_at)
+values (:title, :author, :summary, :link, :published_at, :feed_id, :read_at, :created_at);`
 )
 
 type entryRepository struct {
@@ -46,6 +48,13 @@ func (r *entryRepository) ListForFeed(feedID, page int64) ([]Entry, error) {
 		return nil, fmt.Errorf("cannot select entries: %w", err)
 	}
 	return entries, nil
+}
+
+func (r *entryRepository) Create(entry Entry) error {
+	if _, err := r.db.NamedExec(createEntryQuery, entry); err != nil {
+		return fmt.Errorf("cannot create entry: %w", err)
+	}
+	return nil
 }
 
 func (r *entryRepository) Update(entry Entry) error {
