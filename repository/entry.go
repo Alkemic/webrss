@@ -13,8 +13,9 @@ FROM entry e
 where e.deleted_at is null and e.feed_id = ?
 ORDER BY e.published_at DESC
 LIMIT ? OFFSET ?;`
-	getEntryQuery    = `SELECT * FROM entry e where e.deleted_at is null and id = ?;`
-	updateEntryQuery = `
+	getEntryQuery      = `SELECT * FROM entry e where e.deleted_at is null and id = ?;`
+	getEntryByURLQuery = `SELECT * FROM entry e where e.deleted_at is null and link = ?;`
+	updateEntryQuery   = `
 update entry 
 set title = :title, author = :author, summary = :summary, link = :link, published_at = :published_at, 
 feed_id = :feed_id, read_at = :read_at, created_at = :created_at, updated_at = :updated_at, deleted_at = :deleted_at 
@@ -38,10 +39,19 @@ func NewEntryRepository(db *sqlx.DB, perPage int64) *entryRepository {
 func (r *entryRepository) Get(id int64) (Entry, error) {
 	entry := Entry{}
 	if err := r.db.Get(&entry, getEntryQuery, id); err != nil {
-		return Entry{}, fmt.Errorf("cannot fetch entry: %w", err)
+		return Entry{}, fmt.Errorf("cannot fetch entry (id=%d): %w", id, err)
 	}
 	return entry, nil
 }
+
+func (r *entryRepository) GetByURL(url string) (Entry, error) {
+	entry := Entry{}
+	if err := r.db.Get(&entry, getEntryByURLQuery, url); err != nil {
+		return Entry{}, fmt.Errorf("cannot fetch entry (url=%s): %w", url, err)
+	}
+	return entry, nil
+}
+
 func (r *entryRepository) ListForFeed(feedID, page int64) ([]Entry, error) {
 	entries := []Entry{}
 	if err := r.db.Select(&entries, selectEntriesForFeedQuery, feedID, r.perPage, r.perPage*(page-1)); err != nil {

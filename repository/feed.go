@@ -15,8 +15,9 @@ SELECT
 FROM feed f 
 where f.deleted_at is null and f.category_id in (?) 
 ORDER BY "f.order" ASC;`
-	getFeedQuery    = `select * from feed where id = ? and deleted_at is null;`
-	updateFeedQuery = `
+	selectFeedsQuery = `SELECT * FROM feed where deleted_at is null ORDER BY "order" ASC;`
+	getFeedQuery     = `select * from feed where id = ? and deleted_at is null;`
+	updateFeedQuery  = `
 update feed 
 set feed_title = :feed_title, feed_url = :feed_url, feed_image = :feed_image, feed_subtitle = :feed_subtitle, site_url = :site_url, 
 site_favicon_url = :site_favicon_url, site_favicon = :site_favicon, category_id = :category_id, last_read_at = :last_read_at, 
@@ -48,6 +49,14 @@ func (r *feedRepository) ListForCategories(categoriesIDs []int64) ([]Feed, error
 	query, args, err := sqlx.In(selectFeedsForCategoriesQuery, categoriesIDs)
 	feeds := []Feed{}
 	if err = r.db.Select(&feeds, r.db.Rebind(query), args...); err != nil {
+		return nil, fmt.Errorf("cannot select feeds: %w", err)
+	}
+	return feeds, nil
+}
+
+func (r *feedRepository) List() ([]Feed, error) {
+	feeds := []Feed{}
+	if err := r.db.Select(&feeds, selectFeedsQuery); err != nil {
 		return nil, fmt.Errorf("cannot select feeds: %w", err)
 	}
 	return feeds, nil

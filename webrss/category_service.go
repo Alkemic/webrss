@@ -22,6 +22,7 @@ type feedRepository interface {
 	Get(id int64) (repository.Feed, error)
 	Create(feed repository.Feed) (int64, error)
 	ListForCategories([]int64) ([]repository.Feed, error)
+	List() ([]repository.Feed, error)
 	Update(entry repository.Feed) error
 	Begin() error
 	Commit() error
