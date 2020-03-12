@@ -12,7 +12,7 @@ import (
 )
 
 type feedRepository interface {
-	List() ([]repository.Feed, error)
+	List(ctx context.Context) ([]repository.Feed, error)
 }
 
 type feedService interface {
@@ -20,7 +20,7 @@ type feedService interface {
 }
 
 type feedFetcher interface {
-	Fetch(url string) (feed_fetcher.Feed, error)
+	Fetch(ctx context.Context, url string) (feed_fetcher.Feed, error)
 }
 
 type UpdateService struct {

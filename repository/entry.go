@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
@@ -36,39 +37,39 @@ func NewEntryRepository(db *sqlx.DB, perPage int64) *entryRepository {
 	}
 }
 
-func (r *entryRepository) Get(id int64) (Entry, error) {
+func (r *entryRepository) Get(ctx context.Context, id int64) (Entry, error) {
 	entry := Entry{}
-	if err := r.db.Get(&entry, getEntryQuery, id); err != nil {
+	if err := r.db.GetContext(ctx, &entry, getEntryQuery, id); err != nil {
 		return Entry{}, fmt.Errorf("cannot fetch entry (id=%d): %w", id, err)
 	}
 	return entry, nil
 }
 
-func (r *entryRepository) GetByURL(url string) (Entry, error) {
+func (r *entryRepository) GetByURL(ctx context.Context, url string) (Entry, error) {
 	entry := Entry{}
-	if err := r.db.Get(&entry, getEntryByURLQuery, url); err != nil {
+	if err := r.db.GetContext(ctx, &entry, getEntryByURLQuery, url); err != nil {
 		return Entry{}, fmt.Errorf("cannot fetch entry (url=%s): %w", url, err)
 	}
 	return entry, nil
 }
 
-func (r *entryRepository) ListForFeed(feedID, page int64) ([]Entry, error) {
+func (r *entryRepository) ListForFeed(ctx context.Context, feedID, page int64) ([]Entry, error) {
 	entries := []Entry{}
-	if err := r.db.Select(&entries, selectEntriesForFeedQuery, feedID, r.perPage, r.perPage*(page-1)); err != nil {
+	if err := r.db.SelectContext(ctx, &entries, selectEntriesForFeedQuery, feedID, r.perPage, r.perPage*(page-1)); err != nil {
 		return nil, fmt.Errorf("cannot select entries: %w", err)
 	}
 	return entries, nil
 }
 
-func (r *entryRepository) Create(entry Entry) error {
-	if _, err := r.db.NamedExec(createEntryQuery, entry); err != nil {
+func (r *entryRepository) Create(ctx context.Context, entry Entry) error {
+	if _, err := r.db.NamedExecContext(ctx, createEntryQuery, entry); err != nil {
 		return fmt.Errorf("cannot create entry: %w", err)
 	}
 	return nil
 }
 
-func (r *entryRepository) Update(entry Entry) error {
-	if _, err := r.db.NamedExec(updateEntryQuery, entry); err != nil {
+func (r *entryRepository) Update(ctx context.Context, entry Entry) error {
+	if _, err := r.db.NamedExecContext(ctx, updateEntryQuery, entry); err != nil {
 		return fmt.Errorf("cannot update entry: %w", err)
 	}
 	return nil

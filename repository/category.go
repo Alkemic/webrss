@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
@@ -22,46 +23,46 @@ func NewCategoryRepository(db *sqlx.DB) *categoryRepository {
 	}
 }
 
-func (r *categoryRepository) List(params ...string) ([]Category, error) {
+func (r *categoryRepository) List(ctx context.Context, params ...string) ([]Category, error) {
 	categories := []Category{}
-	err := r.db.Select(&categories, selectCategoriesQuery)
+	err := r.db.SelectContext(ctx, &categories, selectCategoriesQuery)
 	if err != nil {
 		return nil, fmt.Errorf("cannot select categories: %w", err)
 	}
 	return categories, nil
 }
 
-func (r *categoryRepository) Create(category Category) error {
-	if _, err := r.db.NamedExec(createCategoryQuery, category); err != nil {
+func (r *categoryRepository) Create(ctx context.Context, category Category) error {
+	if _, err := r.db.NamedExecContext(ctx, createCategoryQuery, category); err != nil {
 		return fmt.Errorf("cannot create category: %w", err)
 	}
 	return nil
 }
 
-func (r *categoryRepository) SelectMaxOrder() (int, error) {
+func (r *categoryRepository) SelectMaxOrder(ctx context.Context) (int, error) {
 	var maxOrder int
-	if err := r.db.Get(&maxOrder, maxCategoryOrderQuery); err != nil {
+	if err := r.db.GetContext(ctx, &maxOrder, maxCategoryOrderQuery); err != nil {
 		return -1, fmt.Errorf("cannot create category: %w", err)
 	}
 	return maxOrder, nil
 }
 
-func (r *categoryRepository) Get(id int64) (Category, error) {
+func (r *categoryRepository) Get(ctx context.Context, id int64) (Category, error) {
 	return Category{}, nil
 }
 
-func (r *categoryRepository) Delete(id int64) error {
+func (r *categoryRepository) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func (r *categoryRepository) Update(category Category) error {
+func (r *categoryRepository) Update(ctx context.Context, category Category) error {
 	return nil
 }
 
-func (r *categoryRepository) GetNextByOrder(category Category) (Category, error) {
+func (r *categoryRepository) GetNextByOrder(ctx context.Context, category Category) (Category, error) {
 	return Category{}, nil
 }
 
-func (r *categoryRepository) GetPrevByOrder(category Category) (Category, error) {
+func (r *categoryRepository) GetPrevByOrder(ctx context.Context, category Category) (Category, error) {
 	return Category{}, nil
 }

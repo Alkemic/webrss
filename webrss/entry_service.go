@@ -1,6 +1,7 @@
 package webrss
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -8,11 +9,11 @@ import (
 )
 
 type entryRepository interface {
-	Get(id int64) (repository.Entry, error)
-	GetByURL(url string) (repository.Entry, error)
-	ListForFeed(feedID, page int64) ([]repository.Entry, error)
-	Update(entry repository.Entry) error
-	Create(entry repository.Entry) error
+	Get(ctx context.Context, id int64) (repository.Entry, error)
+	GetByURL(ctx context.Context, url string) (repository.Entry, error)
+	ListForFeed(ctx context.Context, feedID, page int64) ([]repository.Entry, error)
+	Update(ctx context.Context, entry repository.Entry) error
+	Create(ctx context.Context, entry repository.Entry) error
 }
 
 type EntryService struct {
@@ -27,13 +28,13 @@ func NewEntryService(entryRepository entryRepository, feedRepository feedReposit
 	}
 }
 
-func (s EntryService) ListForFeed(feedID, page int64) ([]repository.Entry, error) {
-	entries, err := s.entryRepository.ListForFeed(feedID, page)
+func (s EntryService) ListForFeed(ctx context.Context, feedID, page int64) ([]repository.Entry, error) {
+	entries, err := s.entryRepository.ListForFeed(ctx, feedID, page)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching entries for feed %d: %w", feedID, err)
 	}
 
-	feed, err := s.feedRepository.Get(feedID)
+	feed, err := s.feedRepository.Get(ctx, feedID)
 	if err != nil {
 		return nil, fmt.Errorf("cannot fetch feed for entries: %w", err)
 	}
@@ -44,15 +45,15 @@ func (s EntryService) ListForFeed(feedID, page int64) ([]repository.Entry, error
 	}
 
 	feed.LastReadAt.Time = time.Now()
-	if err := s.feedRepository.Update(feed); err != nil {
+	if err := s.feedRepository.Update(ctx, feed); err != nil {
 		return nil, fmt.Errorf("cannot fetch feed for entries: %w", err)
 	}
 
 	return entries, nil
 }
 
-func (s EntryService) Get(id int64) (repository.Entry, error) {
-	entry, err := s.entryRepository.Get(id)
+func (s EntryService) Get(ctx context.Context, id int64) (repository.Entry, error) {
+	entry, err := s.entryRepository.Get(ctx, id)
 	if err != nil {
 		return repository.Entry{}, fmt.Errorf("error getting entry: %w", err)
 	}
@@ -60,12 +61,12 @@ func (s EntryService) Get(id int64) (repository.Entry, error) {
 	if !entry.ReadAt.Valid {
 		entry.ReadAt.Valid = true
 		entry.ReadAt.Time = time.Now()
-		if err := s.entryRepository.Update(entry); err != nil {
+		if err := s.entryRepository.Update(ctx, entry); err != nil {
 			return entry, fmt.Errorf("error updating entry with 'read_at': %w", err)
 		}
 	}
 
-	entry.Feed, err = s.feedRepository.Get(entry.FeedID)
+	entry.Feed, err = s.feedRepository.Get(ctx, entry.FeedID)
 	if err != nil {
 		return entry, fmt.Errorf("cannot fetch feed for entry: %w", err)
 	}

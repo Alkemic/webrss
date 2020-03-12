@@ -1,6 +1,7 @@
 package category
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -16,11 +17,11 @@ import (
 )
 
 type categoryService interface {
-	Get(id int64) (repository.Category, error)
-	List(params ...string) ([]repository.Category, error)
-	Delete(id int64) error
-	Update(repository.Category) error
-	Create(repository.Category) error
+	Get(ctx context.Context, id int64) (repository.Category, error)
+	List(ctx context.Context, params ...string) ([]repository.Category, error)
+	Delete(ctx context.Context, id int64) error
+	Update(ctx context.Context, category repository.Category) error
+	Create(ctx context.Context, category repository.Category) error
 }
 
 type restHandler struct {
@@ -36,7 +37,7 @@ func NewHandler(categoryService categoryService, logger *log.Logger) *restHandle
 }
 
 func (h *restHandler) List(rw http.ResponseWriter, req *http.Request) {
-	categories, err := h.categoryService.List()
+	categories, err := h.categoryService.List(req.Context())
 	if err != nil {
 		h.logger.Println("cannot fetch categories: ", err)
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -77,7 +78,7 @@ func (h *restHandler) Create(rw http.ResponseWriter, req *http.Request) {
 	category := repository.Category{
 		Title: newCategory.Title,
 	}
-	if err := h.categoryService.Create(category); err != nil {
+	if err := h.categoryService.Create(req.Context(), category); err != nil {
 		h.logger.Println("error creating category: ", err)
 		http.Error(rw, "error creating category", http.StatusInternalServerError)
 		return

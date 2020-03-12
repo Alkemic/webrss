@@ -1,6 +1,7 @@
 package webrss
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -12,7 +13,7 @@ import (
 )
 
 type feedFetcher interface {
-	Fetch(url string) (feed_fetcher.Feed, error)
+	Fetch(ctx context.Context, url string) (feed_fetcher.Feed, error)
 }
 
 type FeedService struct {
@@ -31,31 +32,31 @@ func NewFeedService(feedRepository feedRepository, entryRepository entryReposito
 	}
 }
 
-func (s FeedService) Create(feedURL string, categoryID int64) error {
-	feeder, err := s.feedFetcher.Fetch(feedURL)
+func (s FeedService) Create(ctx context.Context, feedURL string, categoryID int64) error {
+	feeder, err := s.feedFetcher.Fetch(ctx, feedURL)
 	if err != nil {
 		return fmt.Errorf("error fetching feed: %w", err)
 	}
-	feed := feeder.Feed()
-	entries := feeder.Entries()
+	feed := feeder.Feed(ctx)
+	entries := feeder.Entries(ctx)
 	now := repository.NewTime(s.nowFn())
 	feed.CategoryID = categoryID
 	feed.CreatedAt = now
 	feed.LastReadAt = repository.NewTime(time.Date(1900, 1, 1, 1, 1, 1, 1, time.UTC))
 
-	if err := s.feedRepository.Begin(); err != nil {
+	if err := s.feedRepository.Begin(ctx); err != nil {
 		return fmt.Errorf("cannot start transation when creating new feed: %w", err)
 	}
-	defer s.feedRepository.Rollback()
+	defer s.feedRepository.Rollback(ctx)
 
-	feedID, err := s.feedRepository.Create(feed)
+	feedID, err := s.feedRepository.Create(ctx, feed)
 	if err != nil {
 		return fmt.Errorf("error creating new feed: %w", err)
 	}
-	if err := s.SaveEntries(feedID, entries); err != nil {
+	if err := s.SaveEntries(ctx, feedID, entries); err != nil {
 		return fmt.Errorf("error saving entries: %w", err)
 	}
-	if err := s.feedRepository.Commit(); err != nil {
+	if err := s.feedRepository.Commit(ctx); err != nil {
 		return fmt.Errorf("cannot commit transation when creating new feed: %w", err)
 	}
 	return nil
@@ -69,21 +70,21 @@ func updateEntry(a, b repository.Entry) repository.Entry {
 	return a
 }
 
-func (s FeedService) SaveEntries(feedID int64, entries []repository.Entry) error {
+func (s FeedService) SaveEntries(ctx context.Context, feedID int64, entries []repository.Entry) error {
 	now := repository.NewTime(s.nowFn())
 	for _, entry := range entries {
-		existingEntry, err := s.entryRepository.GetByURL(entry.Link)
+		existingEntry, err := s.entryRepository.GetByURL(ctx, entry.Link)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return fmt.Errorf("error fetching entry: %w", err)
 		} else if err == sql.ErrNoRows {
 			entry.FeedID = feedID
 			entry.CreatedAt = now
-			if err := s.entryRepository.Create(entry); err != nil {
+			if err := s.entryRepository.Create(ctx, entry); err != nil {
 				return fmt.Errorf("error creating entry: %w", err)
 			}
 		} else {
 			entry = updateEntry(existingEntry, entry)
-			if err := s.entryRepository.Update(entry); err != nil {
+			if err := s.entryRepository.Update(ctx, entry); err != nil {
 				return fmt.Errorf("error updating entry: %w", err)
 			}
 		}

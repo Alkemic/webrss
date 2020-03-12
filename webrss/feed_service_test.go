@@ -1,6 +1,7 @@
 package webrss
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"reflect"
@@ -14,7 +15,7 @@ import (
 
 type feedFetcherMock struct{}
 
-func (m feedFetcherMock) Fetch(url string) (feed_fetcher.Feed, error) {
+func (m feedFetcherMock) Fetch(ctx context.Context, url string) (feed_fetcher.Feed, error) {
 	panic("implement me!")
 }
 
@@ -27,55 +28,55 @@ type entryRepositoryMock struct {
 	createErr         error
 }
 
-func (m *entryRepositoryMock) Get(id int64) (repository.Entry, error) {
+func (m *entryRepositoryMock) Get(ctx context.Context, id int64) (repository.Entry, error) {
 	panic("implement me!")
 }
 
-func (m *entryRepositoryMock) GetByURL(url string) (repository.Entry, error) {
+func (m *entryRepositoryMock) GetByURL(ctx context.Context, url string) (repository.Entry, error) {
 	return m.getEntryByURLResp[url], m.getEntryByURLErr[url]
 }
 
-func (m *entryRepositoryMock) ListForFeed(feedID, page int64) ([]repository.Entry, error) {
+func (m *entryRepositoryMock) ListForFeed(ctx context.Context, feedID, page int64) ([]repository.Entry, error) {
 	panic("implement me!")
 }
 
-func (m *entryRepositoryMock) Update(entry repository.Entry) error {
+func (m *entryRepositoryMock) Update(ctx context.Context, entry repository.Entry) error {
 	m.updateEntries = append(m.updateEntries, entry)
 	return m.updateErr
 }
 
-func (m *entryRepositoryMock) Create(entry repository.Entry) error {
+func (m *entryRepositoryMock) Create(ctx context.Context, entry repository.Entry) error {
 	m.createEntries = append(m.createEntries, entry)
 	return m.createErr
 }
 
 type feedRepositoryMock struct{}
 
-func (m *feedRepositoryMock) Get(id int64) (repository.Feed, error) {
+func (m *feedRepositoryMock) Get(ctx context.Context, id int64) (repository.Feed, error) {
 	panic("implement me!")
 }
 
-func (m *feedRepositoryMock) Create(feed repository.Feed) (int64, error) {
+func (m *feedRepositoryMock) Create(ctx context.Context, feed repository.Feed) (int64, error) {
 	panic("implement me!")
 }
 
-func (m *feedRepositoryMock) ListForCategories([]int64) ([]repository.Feed, error) {
+func (m *feedRepositoryMock) ListForCategories(ctx context.Context, ids []int64) ([]repository.Feed, error) {
 	panic("implement me!")
 }
 
-func (m *feedRepositoryMock) Update(entry repository.Feed) error {
+func (m *feedRepositoryMock) Update(ctx context.Context, entry repository.Feed) error {
 	panic("implement me!")
 }
 
-func (m *feedRepositoryMock) Begin() error {
+func (m *feedRepositoryMock) Begin(ctx context.Context) error {
 	panic("implement me!")
 }
 
-func (m *feedRepositoryMock) Commit() error {
+func (m *feedRepositoryMock) Commit(ctx context.Context) error {
 	panic("implement me!")
 }
 
-func (m *feedRepositoryMock) Rollback() error {
+func (m *feedRepositoryMock) Rollback(ctx context.Context) error {
 	panic("implement me!")
 }
 

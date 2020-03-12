@@ -2,6 +2,7 @@ package feed_fetcher
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -28,8 +29,8 @@ func NewFeed(parsedFeed *gofeed.Feed, httpClient *http.Client, feedURL string) F
 	}
 }
 
-func (f Feed) Feed() repository.Feed {
-	faviconUrl, favicon := f.getFavicon()
+func (f Feed) Feed(ctx context.Context) repository.Feed {
+	faviconUrl, favicon := f.getFavicon(ctx)
 	return repository.Feed{
 		FeedUrl:        f.feedURL,
 		FeedTitle:      f.parsedFeed.Title,
@@ -41,7 +42,7 @@ func (f Feed) Feed() repository.Feed {
 	}
 }
 
-func (f Feed) getFavicon() (repository.NullString, repository.NullString) {
+func (f Feed) getFavicon(ctx context.Context) (repository.NullString, repository.NullString) {
 	parsedUrl, err := url.Parse(f.parsedFeed.Link)
 	if err != nil {
 		parsedUrl, err = url.Parse(f.parsedFeed.FeedLink)
@@ -52,20 +53,20 @@ func (f Feed) getFavicon() (repository.NullString, repository.NullString) {
 
 	baseUrl := parsedUrl.Scheme + "://" + parsedUrl.Host
 	faviconUrl := baseUrl + "/favicon.ico"
-	favicon, err := f.doRequest(faviconUrl)
+	favicon, err := f.doRequest(ctx, faviconUrl)
 	if err != nil {
-		if faviconUrl, err = f.getFaviconURL(baseUrl); err != nil {
+		if faviconUrl, err = f.getFaviconURL(ctx, baseUrl); err != nil {
 			return repository.NullString{}, repository.NullString{}
 		}
-		if favicon, err = f.doRequest(faviconUrl); err != nil {
+		if favicon, err = f.doRequest(ctx, faviconUrl); err != nil {
 			return repository.NullString{}, repository.NullString{}
 		}
 	}
 	return repository.NewNullString(faviconUrl), repository.NewNullString(string(favicon))
 }
 
-func (f Feed) getFaviconURL(url string) (string, error) {
-	body, err := f.doRequest(url)
+func (f Feed) getFaviconURL(ctx context.Context, url string) (string, error) {
+	body, err := f.doRequest(ctx, url)
 	if err != nil {
 		return "", fmt.Errorf("error doing request: %w", err)
 	}
@@ -80,11 +81,12 @@ func (f Feed) getFaviconURL(url string) (string, error) {
 	return faviconNode.Data, nil
 }
 
-func (f Feed) doRequest(url string) ([]byte, error) {
+func (f Feed) doRequest(ctx context.Context, url string) ([]byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error creating request: %w", err)
 	}
+	req = req.WithContext(ctx)
 	req.Header.Set("User-Agent", defaultUserAgent)
 
 	resp, err := f.httpClient.Do(req)
@@ -103,7 +105,7 @@ func (f Feed) doRequest(url string) ([]byte, error) {
 	return faviconRaw, nil
 }
 
-func (f Feed) Entries() []repository.Entry {
+func (f Feed) Entries(_ context.Context) []repository.Entry {
 	entries := make([]repository.Entry, 0, len(f.parsedFeed.Items))
 	for _, item := range f.parsedFeed.Items {
 		var publishedAt repository.Time

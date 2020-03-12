@@ -1,6 +1,7 @@
 package feed_fetcher
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -22,11 +23,12 @@ func NewFeedParser(parser *gofeed.Parser, httpClient *http.Client) *FeedFetcher 
 	}
 }
 
-func (f FeedFetcher) Fetch(url string) (Feed, error) {
+func (f FeedFetcher) Fetch(ctx context.Context, url string) (Feed, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return Feed{}, fmt.Errorf("cannot create request: %w", err)
 	}
+	req = req.WithContext(ctx)
 	req.Header.Set("User-Agent", defaultUserAgent)
 
 	resp, err := f.httpClient.Do(req)

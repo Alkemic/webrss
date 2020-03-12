@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
@@ -37,40 +38,40 @@ func NewFeedRepository(db *sqlx.DB) *feedRepository {
 	}
 }
 
-func (r *feedRepository) Get(id int64) (Feed, error) {
+func (r *feedRepository) Get(ctx context.Context, id int64) (Feed, error) {
 	feed := Feed{}
-	if err := r.db.Get(&feed, getFeedQuery, id); err != nil {
+	if err := r.db.GetContext(ctx, &feed, getFeedQuery, id); err != nil {
 		return Feed{}, fmt.Errorf("cannot fetch feed: %w", err)
 	}
 	return feed, nil
 }
 
-func (r *feedRepository) ListForCategories(categoriesIDs []int64) ([]Feed, error) {
+func (r *feedRepository) ListForCategories(ctx context.Context, categoriesIDs []int64) ([]Feed, error) {
 	query, args, err := sqlx.In(selectFeedsForCategoriesQuery, categoriesIDs)
 	feeds := []Feed{}
-	if err = r.db.Select(&feeds, r.db.Rebind(query), args...); err != nil {
+	if err = r.db.SelectContext(ctx, &feeds, r.db.Rebind(query), args...); err != nil {
 		return nil, fmt.Errorf("cannot select feeds: %w", err)
 	}
 	return feeds, nil
 }
 
-func (r *feedRepository) List() ([]Feed, error) {
+func (r *feedRepository) List(ctx context.Context) ([]Feed, error) {
 	feeds := []Feed{}
-	if err := r.db.Select(&feeds, selectFeedsQuery); err != nil {
+	if err := r.db.SelectContext(ctx, &feeds, selectFeedsQuery); err != nil {
 		return nil, fmt.Errorf("cannot select feeds: %w", err)
 	}
 	return feeds, nil
 }
 
-func (r *feedRepository) Update(feed Feed) error {
-	if _, err := r.db.NamedExec(updateFeedQuery, feed); err != nil {
+func (r *feedRepository) Update(ctx context.Context, feed Feed) error {
+	if _, err := r.db.NamedExecContext(ctx, updateFeedQuery, feed); err != nil {
 		return fmt.Errorf("cannot update feed: %w", err)
 	}
 	return nil
 }
 
-func (r *feedRepository) Create(feed Feed) (int64, error) {
-	res, err := r.db.NamedExec(createFeedQuery, feed)
+func (r *feedRepository) Create(ctx context.Context, feed Feed) (int64, error) {
+	res, err := r.db.NamedExecContext(ctx, createFeedQuery, feed)
 	if err != nil {
 		return 0, fmt.Errorf("cannot create feed: %w", err)
 	}
@@ -81,22 +82,22 @@ func (r *feedRepository) Create(feed Feed) (int64, error) {
 	return lastInsertedID, nil
 }
 
-func (r *feedRepository) Begin() error {
-	if _, err := r.db.Exec("BEGIN;"); err != nil {
+func (r *feedRepository) Begin(ctx context.Context) error {
+	if _, err := r.db.ExecContext(ctx, "BEGIN;"); err != nil {
 		return fmt.Errorf("cannot start transation: %w", err)
 	}
 	return nil
 }
 
-func (r *feedRepository) Commit() error {
-	if _, err := r.db.Exec("COMMIT;"); err != nil {
+func (r *feedRepository) Commit(ctx context.Context) error {
+	if _, err := r.db.ExecContext(ctx, "COMMIT;"); err != nil {
 		return fmt.Errorf("cannot start transation: %w", err)
 	}
 	return nil
 }
 
-func (r *feedRepository) Rollback() error {
-	if _, err := r.db.Exec("ROLLBACK;"); err != nil {
+func (r *feedRepository) Rollback(ctx context.Context) error {
+	if _, err := r.db.ExecContext(ctx, "ROLLBACK;"); err != nil {
 		return fmt.Errorf("cannot start transation: %w", err)
 	}
 	return nil

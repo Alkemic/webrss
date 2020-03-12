@@ -1,6 +1,7 @@
 package feed
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -20,7 +21,7 @@ type FeedValid struct {
 }
 
 type feedService interface {
-	Create(feedURL string, categoryID int64) error
+	Create(ctx context.Context, feedURL string, categoryID int64) error
 }
 
 type restHandler struct {
@@ -55,7 +56,7 @@ func (h *restHandler) Create(rw http.ResponseWriter, req *http.Request) {
 	}
 	log.Println(string(body))
 
-	if err := h.feedService.Create(feedData.FeedURL, feedData.Category); err != nil {
+	if err := h.feedService.Create(req.Context(), feedData.FeedURL, feedData.Category); err != nil {
 		h.logger.Println("error creating feed:", err)
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return

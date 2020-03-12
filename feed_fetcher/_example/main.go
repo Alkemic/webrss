@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -17,15 +18,16 @@ func main() {
 	fp := gofeed.NewParser()
 	fetcher := feed_fetcher.NewFeedParser(fp, &http.Client{})
 	start := time.Now()
-	feed, err := fetcher.Fetch(url)
+	ctx := context.Background()
+	feed, err := fetcher.Fetch(ctx, url)
 	log.Println("time: ", time.Now().Sub(start))
 	if err != nil {
 		log.Fatalln(err)
 	}
-	x, _ := json.MarshalIndent(feed.Feed(), "", "\t")
+	x, _ := json.MarshalIndent(feed.Feed(ctx), "", "\t")
 	log.Println("==== feed =====")
 	log.Println(string(x))
-	x, _ = json.MarshalIndent(feed.Entries(), "", "\t")
+	x, _ = json.MarshalIndent(feed.Entries(ctx), "", "\t")
 	log.Println("=== entries ===")
 	log.Println(string(x))
 }

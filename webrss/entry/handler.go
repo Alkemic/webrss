@@ -1,6 +1,7 @@
 package entry
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -15,8 +16,8 @@ import (
 )
 
 type entryService interface {
-	Get(id int64) (repository.Entry, error)
-	ListForFeed(feedID, page int64) ([]repository.Entry, error)
+	Get(ctx context.Context, id int64) (repository.Entry, error)
+	ListForFeed(ctx context.Context, feedID, page int64) ([]repository.Entry, error)
 }
 
 type restHandler struct {
@@ -44,7 +45,7 @@ func (h *restHandler) Get(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	entry, err := h.entryService.Get(int64(id))
+	entry, err := h.entryService.Get(req.Context(), int64(id))
 	if err != nil {
 		h.logger.Println("error getting entry: ", err)
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -73,7 +74,7 @@ func (h *restHandler) List(rw http.ResponseWriter, req *http.Request) {
 		page = 1
 	}
 
-	entries, err := h.entryService.ListForFeed(int64(feedID), int64(page))
+	entries, err := h.entryService.ListForFeed(req.Context(), int64(feedID), int64(page))
 	if err != nil {
 		h.logger.Println("cannot fetch entries: ", err)
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
