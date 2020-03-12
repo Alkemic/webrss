@@ -76,7 +76,7 @@ func (s FeedService) SaveEntries(ctx context.Context, feedID int64, entries []re
 		existingEntry, err := s.entryRepository.GetByURL(ctx, entry.Link)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return fmt.Errorf("error fetching entry: %w", err)
-		} else if err == sql.ErrNoRows {
+		} else if errors.Is(err, sql.ErrNoRows) {
 			entry.FeedID = feedID
 			entry.CreatedAt = now
 			if err := s.entryRepository.Create(ctx, entry); err != nil {
