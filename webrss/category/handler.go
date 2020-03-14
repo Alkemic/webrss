@@ -7,12 +7,12 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/Alkemic/go-route"
 	"github.com/Alkemic/go-route/middleware"
 	"gopkg.in/go-playground/validator.v9"
 
+	httphelper "github.com/Alkemic/webrss/http"
 	"github.com/Alkemic/webrss/repository"
 	"github.com/Alkemic/webrss/webrss"
 )
@@ -89,19 +89,56 @@ func (h *restHandler) Create(rw http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(rw, `{"status":"ok"}`)
 }
 
-func (h *restHandler) MoveUp(rw http.ResponseWriter, req *http.Request) {
-	idRaw, ok := route.GetParam(req, "id")
-	if !ok {
-		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-	id, err := strconv.Atoi(idRaw)
+func (h *restHandler) Update(rw http.ResponseWriter, req *http.Request) {
+	id, err := httphelper.GetIntParam(req, "id")
 	if err != nil {
-		h.logger.Println("cannot convert param 'id' to int: ", err)
+		h.logger.Println("cannot get param 'id': ", err)
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	if err := h.categoryService.MoveUp(req.Context(), int64(id)); err != nil {
+
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		h.logger.Println("error reading body: ", err)
+		http.Error(rw, "can't read body", http.StatusBadRequest)
+		return
+	}
+	upCategory := Category{}
+	if err := json.Unmarshal(body, &upCategory); err != nil {
+		h.logger.Println("can't unmarshal body: ", err)
+		http.Error(rw, "can't unmarshal body", http.StatusBadRequest)
+		return
+	}
+	if err = validator.New().Struct(upCategory); err != nil {
+		h.logger.Println("validation error: ", err)
+		http.Error(rw, "validation error", http.StatusBadRequest)
+		return
+	}
+
+	ctx := req.Context()
+	category, err := h.categoryService.Get(ctx, id)
+	if err != nil {
+		h.logger.Println("error getting category: ", err)
+		http.Error(rw, "error getting category", http.StatusInternalServerError)
+		return
+	}
+	category.Title = upCategory.Title
+	if err := h.categoryService.Update(ctx, category); err != nil {
+		h.logger.Println("error updating category: ", err)
+		http.Error(rw, "error updating category", http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprint(rw, `{"status":"ok"}`)
+}
+
+func (h *restHandler) MoveUp(rw http.ResponseWriter, req *http.Request) {
+	id, err := httphelper.GetIntParam(req, "id")
+	if err != nil {
+		h.logger.Println("cannot get param 'id': ", err)
+		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if err := h.categoryService.MoveUp(req.Context(), id); err != nil {
 		h.logger.Println("error moving up: ", err)
 		http.Error(rw, "error moving up", http.StatusInternalServerError)
 		return
@@ -110,18 +147,13 @@ func (h *restHandler) MoveUp(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (h *restHandler) MoveDown(rw http.ResponseWriter, req *http.Request) {
-	idRaw, ok := route.GetParam(req, "id")
-	if !ok {
-		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-	id, err := strconv.Atoi(idRaw)
+	id, err := httphelper.GetIntParam(req, "id")
 	if err != nil {
-		h.logger.Println("cannot convert param 'id' to int: ", err)
+		h.logger.Println("cannot get param 'id': ", err)
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	if err := h.categoryService.MoveDown(req.Context(), int64(id)); err != nil {
+	if err := h.categoryService.MoveDown(req.Context(), id); err != nil {
 		h.logger.Println("error moving up: ", err)
 		http.Error(rw, "error moving up", http.StatusInternalServerError)
 		return
@@ -130,18 +162,13 @@ func (h *restHandler) MoveDown(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (h *restHandler) Delete(rw http.ResponseWriter, req *http.Request) {
-	idRaw, ok := route.GetParam(req, "id")
-	if !ok {
-		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-	id, err := strconv.Atoi(idRaw)
+	id, err := httphelper.GetIntParam(req, "id")
 	if err != nil {
-		h.logger.Println("cannot convert param 'id' to int: ", err)
+		h.logger.Println("cannot get param 'id': ", err)
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	if err := h.categoryService.Delete(req.Context(), int64(id)); err != nil {
+	if err := h.categoryService.Delete(req.Context(), id); err != nil {
 		h.logger.Println("error deleting category: ", err)
 		http.Error(rw, "error deleting category", http.StatusInternalServerError)
 		return
@@ -152,6 +179,7 @@ func (h *restHandler) Delete(rw http.ResponseWriter, req *http.Request) {
 func (h *restHandler) GetRoutes() route.RegexpRouter {
 	resource := webrss.RESTEndPoint{
 		Delete: h.Delete,
+		Post:   h.Update,
 	}
 	collection := webrss.RESTEndPoint{
 		Get:  h.List,
