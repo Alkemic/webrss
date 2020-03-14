@@ -16,7 +16,7 @@ type feedRepository interface {
 }
 
 type feedService interface {
-	SaveEntries(feedID int64, entries []repository.Entry) error
+	SaveEntries(ctx context.Context, feedID int64, entries []repository.Entry) error
 }
 
 type feedFetcher interface {
@@ -41,20 +41,20 @@ func New(feedRepository feedRepository, feedService feedService, feedFetcher fee
 
 func (u UpdateService) Run(ctx context.Context) error {
 	g, ctx := errgroup.WithContext(ctx)
-	feeds, err := u.feedRepository.List()
+	feeds, err := u.feedRepository.List(ctx)
 	if err != nil {
 		return fmt.Errorf("cannot select feeds: %w", err)
 	}
 	for _, feed := range feeds {
 		feed := feed
 		g.Go(func() error {
-			feeder, err := u.feedFetcher.Fetch(feed.FeedUrl)
+			feeder, err := u.feedFetcher.Fetch(ctx, feed.FeedUrl)
 			if err != nil {
 				u.logger.Println("error fetching feed:", err)
 				return nil
 			}
-			entries := feeder.Entries()
-			if err := u.feedService.SaveEntries(feed.ID, entries); err != nil {
+			entries := feeder.Entries(ctx)
+			if err := u.feedService.SaveEntries(ctx, feed.ID, entries); err != nil {
 				return fmt.Errorf("cannot save entry: %w", err)
 			}
 			return nil

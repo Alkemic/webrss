@@ -56,6 +56,10 @@ func (m *feedRepositoryMock) Get(ctx context.Context, id int64) (repository.Feed
 	panic("implement me!")
 }
 
+func (m *feedRepositoryMock) List(ctx context.Context) ([]repository.Feed, error) {
+	panic("implement me!")
+}
+
 func (m *feedRepositoryMock) Create(ctx context.Context, feed repository.Feed) (int64, error) {
 	panic("implement me!")
 }
@@ -68,15 +72,17 @@ func (m *feedRepositoryMock) Update(ctx context.Context, entry repository.Feed) 
 	panic("implement me!")
 }
 
-func (m *feedRepositoryMock) Begin(ctx context.Context) error {
+type transactionRepositoryMock struct{}
+
+func (m *transactionRepositoryMock) Begin(ctx context.Context) error {
 	panic("implement me!")
 }
 
-func (m *feedRepositoryMock) Commit(ctx context.Context) error {
+func (m *transactionRepositoryMock) Commit(ctx context.Context) error {
 	panic("implement me!")
 }
 
-func (m *feedRepositoryMock) Rollback(ctx context.Context) error {
+func (m *transactionRepositoryMock) Rollback(ctx context.Context) error {
 	panic("implement me!")
 }
 
@@ -133,6 +139,7 @@ func TestFeedService_SaveEntries(t *testing.T) {
 		getEntryByURLErr  map[string]error
 		updateErr         error
 		createErr         error
+		ctx               context.Context
 
 		checks []check
 	}{{
@@ -298,7 +305,7 @@ func TestFeedService_SaveEntries(t *testing.T) {
 				entryRepository: mockedEntryRepository,
 				feedFetcher:     feedFetcherMock{},
 			}
-			err := s.SaveEntries(tt.feedID, tt.entries)
+			err := s.SaveEntries(tt.ctx, tt.feedID, tt.entries)
 			for _, ch := range tt.checks {
 				ch(err, mockedEntryRepository, t)
 			}

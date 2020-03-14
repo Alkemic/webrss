@@ -9,8 +9,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Alkemic/webrss/updater"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/mmcdole/gofeed"
@@ -18,6 +16,7 @@ import (
 	"github.com/Alkemic/webrss/config"
 	"github.com/Alkemic/webrss/feed_fetcher"
 	"github.com/Alkemic/webrss/repository"
+	"github.com/Alkemic/webrss/updater"
 	"github.com/Alkemic/webrss/webrss"
 )
 
@@ -44,7 +43,8 @@ func main() {
 
 	feedRepository := repository.NewFeedRepository(db)
 	entryRepository := repository.NewEntryRepository(db, cfg.PerPage)
-	feedService := webrss.NewFeedService(feedRepository, entryRepository, feedFetcher)
+	transactionRepository := repository.NewTransactionRepository(db)
+	feedService := webrss.NewFeedService(feedRepository, entryRepository, transactionRepository, feedFetcher)
 	updateService := updater.New(feedRepository, feedService, feedFetcher, logger)
 	if err := updateService.Run(context.Background()); err != nil {
 		logger.Println("got error updating feeds:", err)
