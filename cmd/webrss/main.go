@@ -44,7 +44,8 @@ func main() {
 	defer closeFn()
 
 	fp := gofeed.NewParser()
-	feedFetcher := feed_fetcher.NewFeedParser(fp, &http.Client{})
+	httpClient := &http.Client{}
+	feedFetcher := feed_fetcher.NewFeedParser(fp, httpClient)
 
 	categoryRepository := repository.NewCategoryRepository(db)
 	feedRepository := repository.NewFeedRepository(db)
@@ -54,7 +55,7 @@ func main() {
 	categoryHandler := category.NewHandler(categoryService, logger)
 	entryService := webrss.NewEntryService(entryRepository, feedRepository)
 	entryHandler := entry.NewHandler(entryService, logger)
-	feedService := webrss.NewFeedService(feedRepository, entryRepository, transactionRepository, feedFetcher)
+	feedService := webrss.NewFeedService(logger, feedRepository, entryRepository, transactionRepository, httpClient, feedFetcher)
 	feedHandler := feed.NewHandler(logger, feedService)
 
 	routes := route.RegexpRouter{}

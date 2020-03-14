@@ -39,12 +39,13 @@ func main() {
 	}
 	defer closeFn()
 	fp := gofeed.NewParser()
-	feedFetcher := feed_fetcher.NewFeedParser(fp, &http.Client{})
+	httpClient := &http.Client{}
+	feedFetcher := feed_fetcher.NewFeedParser(fp, httpClient)
 
 	feedRepository := repository.NewFeedRepository(db)
 	entryRepository := repository.NewEntryRepository(db, cfg.PerPage)
 	transactionRepository := repository.NewTransactionRepository(db)
-	feedService := webrss.NewFeedService(feedRepository, entryRepository, transactionRepository, feedFetcher)
+	feedService := webrss.NewFeedService(logger, feedRepository, entryRepository, transactionRepository, httpClient, feedFetcher)
 	updateService := updater.New(feedRepository, feedService, feedFetcher, logger)
 	if err := updateService.Run(context.Background()); err != nil {
 		logger.Println("got error updating feeds:", err)

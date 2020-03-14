@@ -249,7 +249,8 @@ App.controller("RSSCtrl", ($scope, $http, $sce, $uibModal, $location) => {
     $scope.categories = parentScope.feeds.categories.objects
     $scope.feed = feed
     $scope.form = angular.copy(feed)
-    $scope.form.category = $scope.categories.find(c => c.id === feed.category)
+    console.log(feed.category_id)
+    $scope.form.category = $scope.categories.find(c => c.id === feed.category_id)
     delete $scope.form.un_read
     delete $scope.form.new_entries
 

@@ -3,9 +3,14 @@ package webrss
 import (
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
+	"net/http"
 	"time"
+
+	"github.com/Alkemic/webrss/webrss/favicon"
 
 	"github.com/Alkemic/webrss/repository"
 
@@ -18,18 +23,22 @@ type feedFetcher interface {
 
 type FeedService struct {
 	nowFn                 func() time.Time
+	logger                *log.Logger
 	feedRepository        feedRepository
 	entryRepository       entryRepository
 	transactionRepository transactionRepository
+	httpClient            *http.Client
 	feedFetcher           feedFetcher
 }
 
-func NewFeedService(feedRepository feedRepository, entryRepository entryRepository, transactionRepository transactionRepository, feedFetcher feedFetcher) *FeedService {
+func NewFeedService(logger *log.Logger, feedRepository feedRepository, entryRepository entryRepository, transactionRepository transactionRepository, httpClient *http.Client, feedFetcher feedFetcher) *FeedService {
 	return &FeedService{
 		nowFn:                 time.Now,
+		logger:                logger,
 		feedRepository:        feedRepository,
 		entryRepository:       entryRepository,
 		transactionRepository: transactionRepository,
+		httpClient:            httpClient,
 		feedFetcher:           feedFetcher,
 	}
 }
@@ -104,16 +113,46 @@ func (s FeedService) SaveEntries(ctx context.Context, feedID int64, entries []re
 }
 
 func (s FeedService) Update(ctx context.Context, feed repository.Feed) error {
+	feeder, err := s.feedFetcher.Fetch(ctx, feed.FeedUrl)
+	if err != nil {
+		return fmt.Errorf("error fetching feed: %w", err)
+	}
+	entries := feeder.Entries(ctx)
+	log.Println("favicon url:", feeder.Feed(ctx).SiteFaviconUrl.String)
+
+	if feed.SiteFaviconUrl.String != "" {
+		faviconContent, err := favicon.DoRequest(ctx, s.httpClient, feed.SiteFaviconUrl.String)
+		if err != nil {
+			s.logger.Println("cannot download favicon: ", err)
+		}
+		feed.SiteFavicon = repository.NewNullString(base64.StdEncoding.EncodeToString(faviconContent))
+	} else {
+		feed.SiteFavicon.String = ""
+	}
+
+	if err := s.transactionRepository.Begin(ctx); err != nil {
+		return fmt.Errorf("cannot start transation when creating new feed: %w", err)
+	}
+	defer s.transactionRepository.Rollback(ctx)
+
 	feed.UpdatedAt = repository.NewNullTime(s.nowFn())
 	if err := s.feedRepository.Update(ctx, feed); err != nil {
 		return fmt.Errorf("error updating feed: %w", err)
+	}
+	if err := s.SaveEntries(ctx, feed.ID, entries); err != nil {
+		return fmt.Errorf("error saving entries: %w", err)
+	}
+	if err := s.transactionRepository.Commit(ctx); err != nil {
+		return fmt.Errorf("cannot commit transation when creating new feed: %w", err)
 	}
 	return nil
 }
 
 func (s FeedService) Delete(ctx context.Context, feed repository.Feed) error {
-	feed.DeletedAt = repository.NewNullTime(s.nowFn())
-	if err := s.Update(ctx, feed); err != nil {
+	now := repository.NewNullTime(s.nowFn())
+	feed.UpdatedAt = now
+	feed.DeletedAt = now
+	if err := s.feedRepository.Update(ctx, feed); err != nil {
 		return fmt.Errorf("error deleting feed: %w", err)
 	}
 	return nil

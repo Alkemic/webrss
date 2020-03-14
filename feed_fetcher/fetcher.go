@@ -41,5 +41,5 @@ func (f FeedFetcher) Fetch(ctx context.Context, url string) (Feed, error) {
 		return Feed{}, fmt.Errorf("cannot parse feed data: %w", err)
 	}
 
-	return NewFeed(parsedFeed, f.httpClient, url), nil
+	return New(parsedFeed, f.httpClient, url), nil
 }
