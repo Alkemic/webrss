@@ -11,7 +11,6 @@ import (
 type categoryRepository interface {
 	List(ctx context.Context, params ...string) ([]repository.Category, error)
 	Get(ctx context.Context, id int64) (repository.Category, error)
-	Delete(ctx context.Context, id int64) error
 	Update(ctx context.Context, category repository.Category) error
 	GetNextByOrder(ctx context.Context, order int) (repository.Category, error)
 	GetPrevByOrder(ctx context.Context, order int) (repository.Category, error)
@@ -96,9 +95,13 @@ func (s CategoryService) Create(ctx context.Context, category repository.Categor
 }
 
 func (s CategoryService) Delete(ctx context.Context, id int64) error {
-	err := s.categoryRepository.Delete(ctx, id)
+	category, err := s.Get(ctx, id)
 	if err != nil {
-		return fmt.Errorf("error fetching category: %w", err)
+		return fmt.Errorf("cannot fetch catory for delete: %w", err)
+	}
+	category.DeletedAt = repository.NewNullTime(s.nowFn())
+	if err := s.Update(ctx, category); err != nil {
+		return fmt.Errorf("error deleting category: %w", err)
 	}
 	return nil
 }

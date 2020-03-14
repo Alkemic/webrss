@@ -59,10 +59,6 @@ func (r *categoryRepository) Get(ctx context.Context, id int64) (Category, error
 	return category, nil
 }
 
-func (r *categoryRepository) Delete(ctx context.Context, id int64) error {
-	return nil
-}
-
 func (r *categoryRepository) Update(ctx context.Context, category Category) error {
 	if _, err := r.db.NamedExecContext(ctx, updateCategoryQuery, category); err != nil {
 		return fmt.Errorf("cannot update category: %w", err)

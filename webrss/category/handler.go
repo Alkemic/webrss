@@ -129,8 +129,30 @@ func (h *restHandler) MoveDown(rw http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(rw, `{"status":"ok"}`)
 }
 
+func (h *restHandler) Delete(rw http.ResponseWriter, req *http.Request) {
+	idRaw, ok := route.GetParam(req, "id")
+	if !ok {
+		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	id, err := strconv.Atoi(idRaw)
+	if err != nil {
+		h.logger.Println("cannot convert param 'id' to int: ", err)
+		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if err := h.categoryService.Delete(req.Context(), int64(id)); err != nil {
+		h.logger.Println("error deleting category: ", err)
+		http.Error(rw, "error deleting category", http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprint(rw, `{"status":"ok"}`)
+}
+
 func (h *restHandler) GetRoutes() route.RegexpRouter {
-	resource := webrss.RESTEndPoint{}
+	resource := webrss.RESTEndPoint{
+		Delete: h.Delete,
+	}
 	collection := webrss.RESTEndPoint{
 		Get:  h.List,
 		Post: h.Create,
