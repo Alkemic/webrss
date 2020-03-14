@@ -100,7 +100,7 @@ func TestFeedService_SaveEntries(t *testing.T) {
 			t.Helper()
 			if !reflect.DeepEqual(mock.updateEntries, expectedResult) {
 				t.Errorf("Expected result length to be '%d', but got '%d'", len(expectedResult), len(mock.updateEntries))
-				t.Errorf("Expected result to be '%v', but got '%v'", expectedResult, mock.updateEntries)
+				t.Errorf("Expected result to be '%+v', but got '%+v'", expectedResult, mock.updateEntries)
 			}
 		}
 	}
@@ -109,7 +109,7 @@ func TestFeedService_SaveEntries(t *testing.T) {
 			t.Helper()
 			if !reflect.DeepEqual(mock.createEntries, expectedResult) {
 				t.Errorf("Expected result length to be '%d', but got '%d'", len(expectedResult), len(mock.createEntries))
-				t.Errorf("Expected result to be '%v', but got '%v'", expectedResult, mock.createEntries)
+				t.Errorf("Expected result to be '%+v', but got '%+v'", expectedResult, mock.createEntries)
 			}
 		}
 	}
@@ -191,6 +191,7 @@ func TestFeedService_SaveEntries(t *testing.T) {
 				Summary:   repository.NewNullString("new summary"),
 				Link:      "link1",
 				CreatedAt: repository.NewTime(time.Date(2014, 3, 19, 7, 56, 35, 0, time.UTC)),
+				UpdatedAt: repository.NewNullTime(time.Date(2016, 3, 19, 7, 56, 35, 0, time.UTC)),
 				FeedID:    12,
 			}}),
 		),
@@ -225,6 +226,7 @@ func TestFeedService_SaveEntries(t *testing.T) {
 				Summary:   repository.NewNullString("new summary"),
 				Link:      "link1",
 				CreatedAt: repository.NewTime(time.Date(2014, 3, 19, 7, 56, 35, 0, time.UTC)),
+				UpdatedAt: repository.NewNullTime(time.Date(2016, 3, 19, 7, 56, 35, 0, time.UTC)),
 				FeedID:    12,
 			}}),
 			hasCreatedEntries([]repository.Entry{{
