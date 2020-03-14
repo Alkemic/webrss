@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/Alkemic/go-route"
 	"github.com/Alkemic/go-route/middleware"
@@ -22,6 +23,8 @@ type categoryService interface {
 	Delete(ctx context.Context, id int64) error
 	Update(ctx context.Context, category repository.Category) error
 	Create(ctx context.Context, category repository.Category) error
+	MoveUp(ctx context.Context, id int64) error
+	MoveDown(ctx context.Context, id int64) error
 }
 
 type restHandler struct {
@@ -86,6 +89,46 @@ func (h *restHandler) Create(rw http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(rw, `{"status":"ok"}`)
 }
 
+func (h *restHandler) MoveUp(rw http.ResponseWriter, req *http.Request) {
+	idRaw, ok := route.GetParam(req, "id")
+	if !ok {
+		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	id, err := strconv.Atoi(idRaw)
+	if err != nil {
+		h.logger.Println("cannot convert param 'id' to int: ", err)
+		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if err := h.categoryService.MoveUp(req.Context(), int64(id)); err != nil {
+		h.logger.Println("error moving up: ", err)
+		http.Error(rw, "error moving up", http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprint(rw, `{"status":"ok"}`)
+}
+
+func (h *restHandler) MoveDown(rw http.ResponseWriter, req *http.Request) {
+	idRaw, ok := route.GetParam(req, "id")
+	if !ok {
+		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	id, err := strconv.Atoi(idRaw)
+	if err != nil {
+		h.logger.Println("cannot convert param 'id' to int: ", err)
+		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	if err := h.categoryService.MoveDown(req.Context(), int64(id)); err != nil {
+		h.logger.Println("error moving up: ", err)
+		http.Error(rw, "error moving up", http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprint(rw, `{"status":"ok"}`)
+}
+
 func (h *restHandler) GetRoutes() route.RegexpRouter {
 	resource := webrss.RESTEndPoint{}
 	collection := webrss.RESTEndPoint{
@@ -100,6 +143,8 @@ func (h *restHandler) GetRoutes() route.RegexpRouter {
 	routing := route.RegexpRouter{}
 	routing.Add(`^/?$`, setHeaders(collection.Dispatch))
 	routing.Add(`^/(?P<id>\d+)/$`, setHeaders(resource.Dispatch))
+	routing.Add(`^/(?P<id>\d+)/move_up$`, setHeaders(middleware.AllowedMethods([]string{http.MethodPost})(h.MoveUp)))
+	routing.Add(`^/(?P<id>\d+)/move_down$`, setHeaders(middleware.AllowedMethods([]string{http.MethodPost})(h.MoveDown)))
 
 	return routing
 }

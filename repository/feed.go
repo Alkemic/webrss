@@ -81,24 +81,3 @@ func (r *feedRepository) Create(ctx context.Context, feed Feed) (int64, error) {
 	}
 	return lastInsertedID, nil
 }
-
-func (r *feedRepository) Begin(ctx context.Context) error {
-	if _, err := r.db.ExecContext(ctx, "BEGIN;"); err != nil {
-		return fmt.Errorf("cannot start transation: %w", err)
-	}
-	return nil
-}
-
-func (r *feedRepository) Commit(ctx context.Context) error {
-	if _, err := r.db.ExecContext(ctx, "COMMIT;"); err != nil {
-		return fmt.Errorf("cannot start transation: %w", err)
-	}
-	return nil
-}
-
-func (r *feedRepository) Rollback(ctx context.Context) error {
-	if _, err := r.db.ExecContext(ctx, "ROLLBACK;"); err != nil {
-		return fmt.Errorf("cannot start transation: %w", err)
-	}
-	return nil
-}

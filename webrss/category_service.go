@@ -13,8 +13,8 @@ type categoryRepository interface {
 	Get(ctx context.Context, id int64) (repository.Category, error)
 	Delete(ctx context.Context, id int64) error
 	Update(ctx context.Context, category repository.Category) error
-	GetNextByOrder(ctx context.Context, category repository.Category) (repository.Category, error)
-	GetPrevByOrder(ctx context.Context, category repository.Category) (repository.Category, error)
+	GetNextByOrder(ctx context.Context, order int) (repository.Category, error)
+	GetPrevByOrder(ctx context.Context, order int) (repository.Category, error)
 	Create(ctx context.Context, category repository.Category) error
 	SelectMaxOrder(ctx context.Context) (int, error)
 }
@@ -25,20 +25,27 @@ type feedRepository interface {
 	ListForCategories(ctx context.Context, ids []int64) ([]repository.Feed, error)
 	List(ctx context.Context) ([]repository.Feed, error)
 	Update(ctx context.Context, entry repository.Feed) error
+}
+
+type transactionRepository interface {
 	Begin(ctx context.Context) error
 	Commit(ctx context.Context) error
 	Rollback(ctx context.Context) error
 }
 
 type CategoryService struct {
-	categoryRepository categoryRepository
-	feedRepository     feedRepository
+	nowFn                 func() time.Time
+	categoryRepository    categoryRepository
+	feedRepository        feedRepository
+	transactionRepository transactionRepository
 }
 
-func NewCategoryService(categoryRepository categoryRepository, feedRepository feedRepository) *CategoryService {
+func NewCategoryService(categoryRepository categoryRepository, feedRepository feedRepository, transactionRepository transactionRepository) *CategoryService {
 	return &CategoryService{
-		categoryRepository: categoryRepository,
-		feedRepository:     feedRepository,
+		nowFn:                 time.Now,
+		categoryRepository:    categoryRepository,
+		feedRepository:        feedRepository,
+		transactionRepository: transactionRepository,
 	}
 }
 
@@ -97,31 +104,11 @@ func (s CategoryService) Delete(ctx context.Context, id int64) error {
 }
 
 func (s CategoryService) Update(ctx context.Context, category repository.Category) error {
+	category.UpdatedAt = repository.NewNullTime(s.nowFn())
 	err := s.categoryRepository.Update(ctx, category)
 	if err != nil {
 		return fmt.Errorf("error fetching category: %w", err)
 	}
-	return nil
-}
-
-func (s CategoryService) MoveUp(ctx context.Context, id int64) error {
-	entry, err := s.categoryRepository.Get(ctx, id)
-	if err != nil {
-		return fmt.Errorf("error fetching category: %w", err)
-	}
-	nextEntry, err := s.categoryRepository.GetNextByOrder(ctx, entry)
-	if err != nil {
-		return fmt.Errorf("error fetching next category: %w", err)
-	}
-
-	nextEntry.Order, entry.Order = entry.Order, nextEntry.Order
-	if err := s.categoryRepository.Update(ctx, entry); err != nil {
-		return fmt.Errorf("error updating category: %w", err)
-	}
-	if err := s.categoryRepository.Update(ctx, nextEntry); err != nil {
-		return fmt.Errorf("error updating next category: %w", err)
-	}
-
 	return nil
 }
 
@@ -130,17 +117,52 @@ func (s CategoryService) MoveDown(ctx context.Context, id int64) error {
 	if err != nil {
 		return fmt.Errorf("error fetching category: %w", err)
 	}
-	prevEntry, err := s.categoryRepository.GetPrevByOrder(ctx, entry)
+	nextEntry, err := s.categoryRepository.GetNextByOrder(ctx, entry.Order)
+	if err != nil {
+		return fmt.Errorf("error fetching next category: %w", err)
+	}
+
+	nextEntry.Order, entry.Order = entry.Order, nextEntry.Order
+	if err := s.transactionRepository.Begin(ctx); err != nil {
+		return fmt.Errorf("cannot start transation when moving down category: %w", err)
+	}
+	defer s.transactionRepository.Rollback(ctx)
+	if err := s.Update(ctx, entry); err != nil {
+		return fmt.Errorf("error updating category: %w", err)
+	}
+	if err := s.Update(ctx, nextEntry); err != nil {
+		return fmt.Errorf("error updating next category: %w", err)
+	}
+	if err := s.transactionRepository.Commit(ctx); err != nil {
+		return fmt.Errorf("cannot commit transation when moving down category: %w", err)
+	}
+
+	return nil
+}
+
+func (s CategoryService) MoveUp(ctx context.Context, id int64) error {
+	entry, err := s.categoryRepository.Get(ctx, id)
+	if err != nil {
+		return fmt.Errorf("error fetching category: %w", err)
+	}
+	prevEntry, err := s.categoryRepository.GetPrevByOrder(ctx, entry.Order)
 	if err != nil {
 		return fmt.Errorf("error fetching previous category: %w", err)
 	}
 
 	prevEntry.Order, entry.Order = entry.Order, prevEntry.Order
-	if err := s.categoryRepository.Update(ctx, entry); err != nil {
+	if err := s.transactionRepository.Begin(ctx); err != nil {
+		return fmt.Errorf("cannot start transation when moving up category: %w", err)
+	}
+	defer s.transactionRepository.Rollback(ctx)
+	if err := s.Update(ctx, entry); err != nil {
 		return fmt.Errorf("error updating category: %w", err)
 	}
-	if err := s.categoryRepository.Update(ctx, prevEntry); err != nil {
+	if err := s.Update(ctx, prevEntry); err != nil {
 		return fmt.Errorf("error updating previous category: %w", err)
+	}
+	if err := s.transactionRepository.Commit(ctx); err != nil {
+		return fmt.Errorf("cannot commit transation when moving up category: %w", err)
 	}
 
 	return nil

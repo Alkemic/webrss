@@ -17,18 +17,20 @@ type feedFetcher interface {
 }
 
 type FeedService struct {
-	nowFn           func() time.Time
-	feedRepository  feedRepository
-	entryRepository entryRepository
-	feedFetcher     feedFetcher
+	nowFn                 func() time.Time
+	feedRepository        feedRepository
+	entryRepository       entryRepository
+	transactionRepository transactionRepository
+	feedFetcher           feedFetcher
 }
 
-func NewFeedService(feedRepository feedRepository, entryRepository entryRepository, feedFetcher feedFetcher) *FeedService {
+func NewFeedService(feedRepository feedRepository, entryRepository entryRepository, transactionRepository transactionRepository, feedFetcher feedFetcher) *FeedService {
 	return &FeedService{
-		nowFn:           time.Now,
-		feedRepository:  feedRepository,
-		entryRepository: entryRepository,
-		feedFetcher:     feedFetcher,
+		nowFn:                 time.Now,
+		feedRepository:        feedRepository,
+		entryRepository:       entryRepository,
+		transactionRepository: transactionRepository,
+		feedFetcher:           feedFetcher,
 	}
 }
 
@@ -44,10 +46,10 @@ func (s FeedService) Create(ctx context.Context, feedURL string, categoryID int6
 	feed.CreatedAt = now
 	feed.LastReadAt = repository.NewTime(time.Date(1900, 1, 1, 1, 1, 1, 1, time.UTC))
 
-	if err := s.feedRepository.Begin(ctx); err != nil {
+	if err := s.transactionRepository.Begin(ctx); err != nil {
 		return fmt.Errorf("cannot start transation when creating new feed: %w", err)
 	}
-	defer s.feedRepository.Rollback(ctx)
+	defer s.transactionRepository.Rollback(ctx)
 
 	feedID, err := s.feedRepository.Create(ctx, feed)
 	if err != nil {
@@ -56,7 +58,7 @@ func (s FeedService) Create(ctx context.Context, feedURL string, categoryID int6
 	if err := s.SaveEntries(ctx, feedID, entries); err != nil {
 		return fmt.Errorf("error saving entries: %w", err)
 	}
-	if err := s.feedRepository.Commit(ctx); err != nil {
+	if err := s.transactionRepository.Commit(ctx); err != nil {
 		return fmt.Errorf("cannot commit transation when creating new feed: %w", err)
 	}
 	return nil

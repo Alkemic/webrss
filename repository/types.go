@@ -31,6 +31,13 @@ type NullTime struct {
 	sql.NullTime
 }
 
+func NewNullTime(value time.Time) NullTime {
+	return NullTime{NullTime: sql.NullTime{
+		Time:  value,
+		Valid: true,
+	}}
+}
+
 func (nt NullTime) MarshalJSON() ([]byte, error) {
 	if !nt.Valid || nt.Time.IsZero() {
 		return []byte("null"), nil
@@ -38,7 +45,7 @@ func (nt NullTime) MarshalJSON() ([]byte, error) {
 	return []byte(nt.Time.Format(timeFormat)), nil
 }
 
-// A Time struct wraps time.Time, so can be used with sql and custom marshaling.
+// Time struct wraps time.Time, so can be used with sql and custom marshaling.
 type Time struct {
 	time.Time
 }

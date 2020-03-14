@@ -8,9 +8,13 @@ import (
 )
 
 var (
-	selectCategoriesQuery = `select * from category where deleted_at is null order by "order" asc;`
+	selectCategoriesQuery = "select * from category where deleted_at is null order by `order` asc;"
+	selectCategoryQuery   = `select * from category where deleted_at is null and id = ?;`
 	maxCategoryOrderQuery = `select max(c.order) from category c where deleted_at is null;`
 	createCategoryQuery   = "insert into category(title, `order`, created_at) values (:title, :order, :created_at);"
+	getPrevQuery          = "select * from category where deleted_at is null and `order` < ? order by `order` desc limit 1;"
+	getNextQuery          = "select * from category where deleted_at is null and `order` > ? order by `order` asc limit 1;"
+	updateCategoryQuery   = "update category set title = :title, `order` = :order, created_at = :created_at, updated_at = :updated_at, deleted_at = :deleted_at where id = :id;"
 )
 
 type categoryRepository struct {
@@ -48,7 +52,11 @@ func (r *categoryRepository) SelectMaxOrder(ctx context.Context) (int, error) {
 }
 
 func (r *categoryRepository) Get(ctx context.Context, id int64) (Category, error) {
-	return Category{}, nil
+	var category Category
+	if err := r.db.GetContext(ctx, &category, selectCategoryQuery, id); err != nil {
+		return Category{}, fmt.Errorf("cannot select category: %w", err)
+	}
+	return category, nil
 }
 
 func (r *categoryRepository) Delete(ctx context.Context, id int64) error {
@@ -56,13 +64,24 @@ func (r *categoryRepository) Delete(ctx context.Context, id int64) error {
 }
 
 func (r *categoryRepository) Update(ctx context.Context, category Category) error {
+	if _, err := r.db.NamedExecContext(ctx, updateCategoryQuery, category); err != nil {
+		return fmt.Errorf("cannot update category: %w", err)
+	}
 	return nil
 }
 
-func (r *categoryRepository) GetNextByOrder(ctx context.Context, category Category) (Category, error) {
-	return Category{}, nil
+func (r *categoryRepository) GetNextByOrder(ctx context.Context, order int) (Category, error) {
+	var category Category
+	if err := r.db.GetContext(ctx, &category, getNextQuery, order); err != nil {
+		return Category{}, fmt.Errorf("cannot select next category: %w", err)
+	}
+	return category, nil
 }
 
-func (r *categoryRepository) GetPrevByOrder(ctx context.Context, category Category) (Category, error) {
-	return Category{}, nil
+func (r *categoryRepository) GetPrevByOrder(ctx context.Context, order int) (Category, error) {
+	var category Category
+	if err := r.db.GetContext(ctx, &category, getPrevQuery, order); err != nil {
+		return Category{}, fmt.Errorf("cannot select previous category: %w", err)
+	}
+	return category, nil
 }

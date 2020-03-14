@@ -49,11 +49,12 @@ func main() {
 	categoryRepository := repository.NewCategoryRepository(db)
 	feedRepository := repository.NewFeedRepository(db)
 	entryRepository := repository.NewEntryRepository(db, cfg.PerPage)
-	categoryService := webrss.NewCategoryService(categoryRepository, feedRepository)
+	transactionRepository := repository.NewTransactionRepository(db)
+	categoryService := webrss.NewCategoryService(categoryRepository, feedRepository, transactionRepository)
 	categoryHandler := category.NewHandler(categoryService, logger)
 	entryService := webrss.NewEntryService(entryRepository, feedRepository)
 	entryHandler := entry.NewHandler(entryService, logger)
-	feedService := webrss.NewFeedService(feedRepository, entryRepository, feedFetcher)
+	feedService := webrss.NewFeedService(feedRepository, entryRepository, transactionRepository, feedFetcher)
 	feedHandler := feed.NewHandler(logger, feedService)
 
 	routes := route.RegexpRouter{}
