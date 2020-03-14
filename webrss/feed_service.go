@@ -34,6 +34,14 @@ func NewFeedService(feedRepository feedRepository, entryRepository entryReposito
 	}
 }
 
+func (s FeedService) Get(ctx context.Context, id int64) (repository.Feed, error) {
+	feed, err := s.feedRepository.Get(ctx, id)
+	if err != nil {
+		return repository.Feed{}, fmt.Errorf("error getting feed: %w", err)
+	}
+	return feed, nil
+}
+
 func (s FeedService) Create(ctx context.Context, feedURL string, categoryID int64) error {
 	feeder, err := s.feedFetcher.Fetch(ctx, feedURL)
 	if err != nil {
@@ -86,10 +94,27 @@ func (s FeedService) SaveEntries(ctx context.Context, feedID int64, entries []re
 			}
 		} else {
 			entry = updateEntry(existingEntry, entry)
+			entry.UpdatedAt = repository.NewNullTime(s.nowFn())
 			if err := s.entryRepository.Update(ctx, entry); err != nil {
 				return fmt.Errorf("error updating entry: %w", err)
 			}
 		}
+	}
+	return nil
+}
+
+func (s FeedService) Update(ctx context.Context, feed repository.Feed) error {
+	feed.UpdatedAt = repository.NewNullTime(s.nowFn())
+	if err := s.feedRepository.Update(ctx, feed); err != nil {
+		return fmt.Errorf("error updating feed: %w", err)
+	}
+	return nil
+}
+
+func (s FeedService) Delete(ctx context.Context, feed repository.Feed) error {
+	feed.DeletedAt = repository.NewNullTime(s.nowFn())
+	if err := s.Update(ctx, feed); err != nil {
+		return fmt.Errorf("error deleting feed: %w", err)
 	}
 	return nil
 }
