@@ -1,53 +1,23 @@
-FROM debian:9
+FROM golang:1.14 as backend
 
-ENV APP_DIR /app
+COPY . /build
+WORKDIR /build
+RUN go mod download && \
+    CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o webrss-app ./cmd/webrss && \
+    strip webrss-app
 
-ENV PACKAGES_REQUIRED_PRE_BUILD gnupg2 apt-transport-https ca-certificates
+FROM node:6 as frontend
 
-ENV PACKAGES_REQUIRED_BUILD libxml2-dev libxslt1-dev \
-    lsb-release \
-    python-dev python-pip python-setuptools \
-    curl gnupg2 ca-certificates gcc nodejs
-ENV PACKAGES_REQUIRED python libmariadbclient-dev-compat libmariadbclient18 \
-    libxml2 libpython2.7 libxslt1.1
+COPY . /build
+WORKDIR /build
+RUN cd frontend && \
+    npm i && \
+    PRODUCTION=true ./node_modules/.bin/gulp build
 
-ENV NODE_SOURCES_LIST "deb [arch=amd64] https://deb.nodesource.com/node_6.x stretch main"
+FROM scratch
 
-COPY . $APP_DIR
+COPY --from=backend /build/webrss-app /webrss
+COPY --from=frontend /build/static/* /static/
+COPY templates/* /templates/
 
-WORKDIR $APP_DIR
-
-ADD https://deb.nodesource.com/gpgkey/nodesource.gpg.key /tmp/nodesource.gpg.key
-
-RUN set -x && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends $PACKAGES_REQUIRED_PRE_BUILD && \
-    \
-    echo $NODE_SOURCES_LIST > /etc/apt/sources.list.d/nodesource.list && \
-    cat /etc/apt/sources.list.d/nodesource.list && \
-    apt-key add /tmp/nodesource.gpg.key && \
-    \
-    apt-get update && \
-    apt-get install -y --no-install-recommends $PACKAGES_REQUIRED $PACKAGES_REQUIRED_BUILD && \
-    \
-    pip install -r requirements.txt && \
-    pip install uwsgi==2.0.15 && \
-    (\
-        cd frontend && \
-        npm i && \
-        PRODUCTION=true ./node_modules/.bin/gulp build && \
-        rm -rf ./node_modules/ \
-    ) && \
-    \
-    apt-get remove --purge -y $PACKAGES_REQUIRED_PRE_BUILD $PACKAGES_REQUIRED_BUILD && \
-    apt-get install -y --no-install-recommends ca-certificates&& \
-    apt-get clean && \
-    apt-get autoremove -y && \
-    apt-get autoclean -y && \
-    rm -rf /root/.npm/* \
-        /root/.cache/pip/* \
-        /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-EXPOSE 8000
-
-CMD ./scripts/create_tables.py && uwsgi -y $APP_DIR/uwsgi.yaml
+ENTRYPOINT ["/webrss"]

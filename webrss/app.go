@@ -5,11 +5,10 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Alkemic/go-route"
 	"github.com/Alkemic/go-route/middleware"
 
 	"github.com/Alkemic/webrss/config"
-
-	"github.com/Alkemic/go-route"
 )
 
 type handler interface {
@@ -52,9 +51,7 @@ func New(logger *log.Logger, cfg *config.Config, categoryHandler handler, feedHa
 func (a App) Run() error {
 	defer a.execOnExit()
 	handler := middleware.TimeTrack(a.logger)(middleware.PanicInterceptorWithLogger(a.logger)(a.routes.ServeHTTP))
-	bindAddr := fmt.Sprintf("%s:%d", a.cfg.Run.Host, a.cfg.Run.Port)
-
-	if err := http.ListenAndServe(bindAddr, handler); err != http.ErrServerClosed {
+	if err := http.ListenAndServe(a.cfg.BindAdr, handler); err != http.ErrServerClosed {
 		return fmt.Errorf("exited with error: %w", err)
 	}
 	return nil
@@ -69,11 +66,3 @@ func (a *App) execOnExit() {
 		fn()
 	}
 }
-
-//func index(w http.ResponseWriter, r *http.Request) {
-//	http.ServeFile(w, r, "templates/index.html")
-//}
-
-//func favicon(w http.ResponseWriter, r *http.Request) {
-//	http.ServeFile(w, r, "static/images/favicon.ico")
-//}

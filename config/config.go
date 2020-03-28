@@ -1,53 +1,30 @@
 package config
 
 import (
-	"fmt"
-	"io/ioutil"
-
-	"gopkg.in/yaml.v2"
+	"os"
+	"strconv"
 )
 
 const defaultPerPage = 50
 
-type configRun struct {
-	Host string
-	Port int
-}
-
-type configDB struct {
-	Verbose bool
-	Time    bool
-
-	User     string
-	Password string
-	Database string
-
-	Host string
-	Port string
-}
-
 type Config struct {
-	DB  configDB
-	Run configRun
-
-	PerPage int64
+	DBDSN   string
+	BindAdr string
+	PerPage uint64
 }
 
-func LoadConfig(configFile string) (*Config, error) {
-	var config Config
-
-	data, err := ioutil.ReadFile(configFile)
-	if err != nil {
-		return nil, err
+func LoadConfig() *Config {
+	perPageRaw := os.Getenv("PER_PAGE")
+	var perPage int
+	if perPageRaw == "" {
+		perPage = defaultPerPage
 	}
-
-	if err = yaml.Unmarshal(data, &config); err != nil {
-		return nil, fmt.Errorf("cannot parse config file: %w", err)
+	if perPage, _ = strconv.Atoi(perPageRaw); perPage == 0 {
+		perPage = defaultPerPage
 	}
-
-	if config.PerPage == 0 {
-		config.PerPage = defaultPerPage
+	return &Config{
+		DBDSN:   os.Getenv("DB_DSN"),
+		BindAdr: os.Getenv("BIND_ADDR"),
+		PerPage: uint64(perPage),
 	}
-
-	return &config, nil
 }
