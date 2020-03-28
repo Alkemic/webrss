@@ -39,11 +39,11 @@ func New(logger *log.Logger, cfg *config.Config, categoryHandler handler, feedHa
 	app.routes.Add("^/api/entry", entryHandler.GetRoutes())
 	app.routes.Add("^/api/feed", feedHandler.GetRoutes())
 	app.routes.Add("^/favicon.ico$", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "webrss/static/images/favicon.ico")
+		http.ServeFile(w, r, "static/images/favicon.ico")
 	})
-	app.routes.Add("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("webrss/static"))))
+	app.routes.Add("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	app.routes.Add("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "webrss/templates/index.html")
+		http.ServeFile(w, r, "templates/index.html")
 	})
 
 	return app
@@ -71,9 +71,9 @@ func (a *App) execOnExit() {
 }
 
 //func index(w http.ResponseWriter, r *http.Request) {
-//	http.ServeFile(w, r, "webrss/templates/index.html")
+//	http.ServeFile(w, r, "templates/index.html")
 //}
 
 //func favicon(w http.ResponseWriter, r *http.Request) {
-//	http.ServeFile(w, r, "webrss/static/images/favicon.ico")
+//	http.ServeFile(w, r, "static/images/favicon.ico")
 //}

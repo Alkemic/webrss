@@ -1,5 +1,5 @@
 /* global module: false */
-const destDir = "../webrss/static"
+const destDir = "../static"
 const nodeDir = "./node_modules"
 
 module.exports = {
