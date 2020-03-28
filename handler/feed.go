@@ -1,7 +1,6 @@
-package feed
+package handler
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,12 +8,11 @@ import (
 	"net/http"
 	"strconv"
 
-	httphelper "github.com/Alkemic/webrss/http"
-
 	"github.com/Alkemic/go-route"
 	"github.com/Alkemic/go-route/middleware"
 	"gopkg.in/go-playground/validator.v9"
 
+	httphelper "github.com/Alkemic/webrss/http"
 	"github.com/Alkemic/webrss/repository"
 	"github.com/Alkemic/webrss/webrss"
 )
@@ -26,27 +24,19 @@ type FeedValid struct {
 	Category       int64  `validate:"required"`
 }
 
-type feedService interface {
-	Get(ctx context.Context, id int64) (repository.Feed, error)
-	Create(ctx context.Context, feedURL string, categoryID int64) error
-	Delete(ctx context.Context, feed repository.Feed) error
-	Update(ctx context.Context, feed repository.Feed) error
-	SaveEntries(ctx context.Context, feedID int64, entries []repository.Entry) error
+type feedHandler struct {
+	logger        *log.Logger
+	webrssService webrssService
 }
 
-type restHandler struct {
-	logger      *log.Logger
-	feedService feedService
-}
-
-func NewHandler(logger *log.Logger, feedService feedService) *restHandler {
-	return &restHandler{
-		feedService: feedService,
-		logger:      logger,
+func NewFeed(logger *log.Logger, service webrssService) *feedHandler {
+	return &feedHandler{
+		webrssService: service,
+		logger:        logger,
 	}
 }
 
-func (h *restHandler) Create(rw http.ResponseWriter, req *http.Request) {
+func (h *feedHandler) Create(rw http.ResponseWriter, req *http.Request) {
 	body, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		h.logger.Println("error reading body:", err)
@@ -65,7 +55,7 @@ func (h *restHandler) Create(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if err := h.feedService.Create(req.Context(), feedData.FeedURL, feedData.Category); err != nil {
+	if err := h.webrssService.CreateFeed(req.Context(), feedData.FeedURL, feedData.Category); err != nil {
 		h.logger.Println("error creating feed:", err)
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -73,7 +63,7 @@ func (h *restHandler) Create(rw http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(rw, `{"status":"ok"}`)
 }
 
-func (h *restHandler) Update(rw http.ResponseWriter, req *http.Request) {
+func (h *feedHandler) Update(rw http.ResponseWriter, req *http.Request) {
 	id, err := httphelper.GetIntParam(req, "id")
 	if err != nil {
 		h.logger.Println("cannot get param 'id': ", err)
@@ -99,7 +89,7 @@ func (h *restHandler) Update(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	ctx := req.Context()
-	feed, err := h.feedService.Get(ctx, id)
+	feed, err := h.webrssService.GetFeed(ctx, id)
 	if err != nil {
 		h.logger.Println("error getting feed: ", err)
 		http.Error(rw, "error getting feed", http.StatusInternalServerError)
@@ -110,7 +100,7 @@ func (h *restHandler) Update(rw http.ResponseWriter, req *http.Request) {
 	feed.CategoryID = feedData.Category
 	feed.SiteFaviconUrl = repository.NewNullString(feedData.FeedFaviconURL)
 
-	if err := h.feedService.Update(ctx, feed); err != nil {
+	if err := h.webrssService.UpdateFeed(ctx, feed); err != nil {
 		h.logger.Println("error updating category: ", err)
 		http.Error(rw, "error updating category", http.StatusInternalServerError)
 		return
@@ -118,7 +108,7 @@ func (h *restHandler) Update(rw http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(rw, `{"status":"ok"}`)
 }
 
-func (h *restHandler) Delete(rw http.ResponseWriter, req *http.Request) {
+func (h *feedHandler) Delete(rw http.ResponseWriter, req *http.Request) {
 	idRaw, ok := route.GetParam(req, "id")
 	if !ok {
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -131,13 +121,13 @@ func (h *restHandler) Delete(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	ctx := req.Context()
-	feed, err := h.feedService.Get(ctx, int64(id))
+	feed, err := h.webrssService.GetFeed(ctx, int64(id))
 	if err != nil {
 		h.logger.Println("cannot get feed: ", err)
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if err := h.feedService.Delete(ctx, feed); err != nil {
+	if err := h.webrssService.DeleteFeed(ctx, feed); err != nil {
 		h.logger.Println("cannot delete feed: ", err)
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -145,7 +135,7 @@ func (h *restHandler) Delete(rw http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(rw, `{"status":"ok"}`)
 }
 
-func (r *restHandler) GetRoutes() route.RegexpRouter {
+func (r *feedHandler) GetRoutes() route.RegexpRouter {
 	resource := webrss.RESTEndPoint{
 		Delete: r.Delete,
 		Put:    r.Update,

@@ -299,7 +299,7 @@ func TestFeedService_SaveEntries(t *testing.T) {
 				createErr:         tt.createErr,
 			}
 			mockedFeedRepository := &feedRepositoryMock{}
-			s := FeedService{
+			s := WebRSSService{
 				nowFn: func() time.Time {
 					return time.Date(2016, 3, 19, 7, 56, 35, 0, time.UTC)
 				},

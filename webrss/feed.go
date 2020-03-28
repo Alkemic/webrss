@@ -7,43 +7,13 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"time"
 
-	"github.com/Alkemic/webrss/webrss/favicon"
-
+	"github.com/Alkemic/webrss/favicon"
 	"github.com/Alkemic/webrss/repository"
-
-	"github.com/Alkemic/webrss/feed_fetcher"
 )
 
-type feedFetcher interface {
-	Fetch(ctx context.Context, url string) (feed_fetcher.Feed, error)
-}
-
-type FeedService struct {
-	nowFn                 func() time.Time
-	logger                *log.Logger
-	feedRepository        feedRepository
-	entryRepository       entryRepository
-	transactionRepository transactionRepository
-	httpClient            *http.Client
-	feedFetcher           feedFetcher
-}
-
-func NewFeedService(logger *log.Logger, feedRepository feedRepository, entryRepository entryRepository, transactionRepository transactionRepository, httpClient *http.Client, feedFetcher feedFetcher) *FeedService {
-	return &FeedService{
-		nowFn:                 time.Now,
-		logger:                logger,
-		feedRepository:        feedRepository,
-		entryRepository:       entryRepository,
-		transactionRepository: transactionRepository,
-		httpClient:            httpClient,
-		feedFetcher:           feedFetcher,
-	}
-}
-
-func (s FeedService) Get(ctx context.Context, id int64) (repository.Feed, error) {
+func (s WebRSSService) GetFeed(ctx context.Context, id int64) (repository.Feed, error) {
 	feed, err := s.feedRepository.Get(ctx, id)
 	if err != nil {
 		return repository.Feed{}, fmt.Errorf("error getting feed: %w", err)
@@ -51,7 +21,7 @@ func (s FeedService) Get(ctx context.Context, id int64) (repository.Feed, error)
 	return feed, nil
 }
 
-func (s FeedService) Create(ctx context.Context, feedURL string, categoryID int64) error {
+func (s WebRSSService) CreateFeed(ctx context.Context, feedURL string, categoryID int64) error {
 	feeder, err := s.feedFetcher.Fetch(ctx, feedURL)
 	if err != nil {
 		return fmt.Errorf("error fetching feed: %w", err)
@@ -89,7 +59,7 @@ func updateEntry(a, b repository.Entry) repository.Entry {
 	return a
 }
 
-func (s FeedService) SaveEntries(ctx context.Context, feedID int64, entries []repository.Entry) error {
+func (s WebRSSService) SaveEntries(ctx context.Context, feedID int64, entries []repository.Entry) error {
 	now := repository.NewTime(s.nowFn())
 	for _, entry := range entries {
 		existingEntry, err := s.entryRepository.GetByURL(ctx, entry.Link)
@@ -112,7 +82,7 @@ func (s FeedService) SaveEntries(ctx context.Context, feedID int64, entries []re
 	return nil
 }
 
-func (s FeedService) Update(ctx context.Context, feed repository.Feed) error {
+func (s WebRSSService) UpdateFeed(ctx context.Context, feed repository.Feed) error {
 	feeder, err := s.feedFetcher.Fetch(ctx, feed.FeedUrl)
 	if err != nil {
 		return fmt.Errorf("error fetching feed: %w", err)
@@ -148,7 +118,7 @@ func (s FeedService) Update(ctx context.Context, feed repository.Feed) error {
 	return nil
 }
 
-func (s FeedService) Delete(ctx context.Context, feed repository.Feed) error {
+func (s WebRSSService) DeleteFeed(ctx context.Context, feed repository.Feed) error {
 	now := repository.NewNullTime(s.nowFn())
 	feed.UpdatedAt = now
 	feed.DeletedAt = now

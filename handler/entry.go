@@ -1,7 +1,6 @@
-package entry
+package handler
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -11,28 +10,22 @@ import (
 	"github.com/Alkemic/go-route"
 	"github.com/Alkemic/go-route/middleware"
 
-	"github.com/Alkemic/webrss/repository"
 	"github.com/Alkemic/webrss/webrss"
 )
 
-type entryService interface {
-	Get(ctx context.Context, id int64) (repository.Entry, error)
-	ListForFeed(ctx context.Context, feedID, page int64) ([]repository.Entry, error)
+type entryHandler struct {
+	logger        *log.Logger
+	webrssService webrssService
 }
 
-type restHandler struct {
-	entryService entryService
-	logger       *log.Logger
-}
-
-func NewHandler(entryService entryService, logger *log.Logger) *restHandler {
-	return &restHandler{
-		entryService: entryService,
-		logger:       logger,
+func NewEntry(logger *log.Logger, webrssService webrssService) *entryHandler {
+	return &entryHandler{
+		logger:        logger,
+		webrssService: webrssService,
 	}
 }
 
-func (h *restHandler) Get(rw http.ResponseWriter, req *http.Request) {
+func (h *entryHandler) Get(rw http.ResponseWriter, req *http.Request) {
 	idRaw, ok := route.GetParam(req, "id")
 	if !ok {
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -45,7 +38,7 @@ func (h *restHandler) Get(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	entry, err := h.entryService.Get(req.Context(), int64(id))
+	entry, err := h.webrssService.GetEntry(req.Context(), int64(id))
 	if err != nil {
 		h.logger.Println("error getting entry: ", err)
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -57,7 +50,7 @@ func (h *restHandler) Get(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (h *restHandler) List(rw http.ResponseWriter, req *http.Request) {
+func (h *entryHandler) List(rw http.ResponseWriter, req *http.Request) {
 	feedID, _, err := getIntParam("feed", req)
 	if err != nil {
 		h.logger.Println(err)
@@ -74,7 +67,7 @@ func (h *restHandler) List(rw http.ResponseWriter, req *http.Request) {
 		page = 1
 	}
 
-	entries, err := h.entryService.ListForFeed(req.Context(), int64(feedID), int64(page))
+	entries, err := h.webrssService.ListEntriesForFeed(req.Context(), int64(feedID), int64(page))
 	if err != nil {
 		h.logger.Println("cannot fetch entries: ", err)
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -101,7 +94,7 @@ func getIntParam(key string, req *http.Request) (int, bool, error) {
 	return value, true, nil
 }
 
-func (r *restHandler) GetRoutes() route.RegexpRouter {
+func (r *entryHandler) GetRoutes() route.RegexpRouter {
 	resource := webrss.RESTEndPoint{
 		Get: r.Get,
 	}

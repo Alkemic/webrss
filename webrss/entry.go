@@ -16,19 +16,7 @@ type entryRepository interface {
 	Create(ctx context.Context, entry repository.Entry) error
 }
 
-type EntryService struct {
-	entryRepository entryRepository
-	feedRepository  feedRepository
-}
-
-func NewEntryService(entryRepository entryRepository, feedRepository feedRepository) *EntryService {
-	return &EntryService{
-		entryRepository: entryRepository,
-		feedRepository:  feedRepository,
-	}
-}
-
-func (s EntryService) ListForFeed(ctx context.Context, feedID, page int64) ([]repository.Entry, error) {
+func (s WebRSSService) ListEntriesForFeed(ctx context.Context, feedID, page int64) ([]repository.Entry, error) {
 	entries, err := s.entryRepository.ListForFeed(ctx, feedID, page)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching entries for feed %d: %w", feedID, err)
@@ -52,7 +40,7 @@ func (s EntryService) ListForFeed(ctx context.Context, feedID, page int64) ([]re
 	return entries, nil
 }
 
-func (s EntryService) Get(ctx context.Context, id int64) (repository.Entry, error) {
+func (s WebRSSService) GetEntry(ctx context.Context, id int64) (repository.Entry, error) {
 	entry, err := s.entryRepository.Get(ctx, id)
 	if err != nil {
 		return repository.Entry{}, fmt.Errorf("error getting entry: %w", err)

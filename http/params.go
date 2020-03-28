@@ -16,7 +16,7 @@ func GetIntParam(req *http.Request, key string) (int64, error) {
 	}
 	value, err := strconv.Atoi(rawValue)
 	if err != nil {
-		return -1, fmt.Errorf("cannot convert param '%s' to int: ", key, err)
+		return -1, fmt.Errorf("cannot convert param '%s' to int: %w", key, err)
 	}
 	return int64(value), nil
 }

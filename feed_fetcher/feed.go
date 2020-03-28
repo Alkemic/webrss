@@ -9,8 +9,8 @@ import (
 
 	"github.com/mmcdole/gofeed"
 
+	"github.com/Alkemic/webrss/favicon"
 	"github.com/Alkemic/webrss/repository"
-	"github.com/Alkemic/webrss/webrss/favicon"
 )
 
 type Feed struct {

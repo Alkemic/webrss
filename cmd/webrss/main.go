@@ -9,8 +9,9 @@ import (
 	"os"
 	"runtime/debug"
 
+	"github.com/Alkemic/webrss/handler"
+
 	"github.com/Alkemic/go-route"
-	"github.com/Alkemic/go-route/middleware"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/mmcdole/gofeed"
@@ -19,9 +20,6 @@ import (
 	"github.com/Alkemic/webrss/feed_fetcher"
 	"github.com/Alkemic/webrss/repository"
 	"github.com/Alkemic/webrss/webrss"
-	"github.com/Alkemic/webrss/webrss/category"
-	"github.com/Alkemic/webrss/webrss/entry"
-	"github.com/Alkemic/webrss/webrss/feed"
 )
 
 var (
@@ -51,35 +49,15 @@ func main() {
 	feedRepository := repository.NewFeedRepository(db)
 	entryRepository := repository.NewEntryRepository(db, cfg.PerPage)
 	transactionRepository := repository.NewTransactionRepository(db)
-	categoryService := webrss.NewCategoryService(categoryRepository, feedRepository, transactionRepository)
-	categoryHandler := category.NewHandler(categoryService, logger)
-	entryService := webrss.NewEntryService(entryRepository, feedRepository)
-	entryHandler := entry.NewHandler(entryService, logger)
-	feedService := webrss.NewFeedService(logger, feedRepository, entryRepository, transactionRepository, httpClient, feedFetcher)
-	feedHandler := feed.NewHandler(logger, feedService)
-
-	routes := route.RegexpRouter{}
-	routes.Add("^/api/category", categoryHandler.GetRoutes())
-	routes.Add("^/api/entry", entryHandler.GetRoutes())
-	routes.Add("^/api/feed", feedHandler.GetRoutes())
-	routes.Add("^/favicon.ico$", favicon)
-	routes.Add("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("webrss/static"))))
-	routes.Add("/", index)
-
-	//handler := middleware.TimeTrack(logger)(middleware.PanicInterceptorWithLogger(logger)(routes.ServeHTTP))
-	handler := middleware.TimeTrack(logger)(PanicInterceptorWithLogger(logger)(routes.ServeHTTP))
-	bindAddr := fmt.Sprintf("%s:%d", cfg.Run.Host, cfg.Run.Port)
-	if err := http.ListenAndServe(bindAddr, handler); err != nil {
-		log.Fatalln("exited with error: ", err)
+	webrssService := webrss.NewService(logger, categoryRepository, feedRepository, entryRepository, transactionRepository, httpClient, feedFetcher)
+	categoryHandler := handler.NewCategory(logger, webrssService)
+	entryHandler := handler.NewEntry(logger, webrssService)
+	feedHandler := handler.NewFeed(logger, webrssService)
+	app := webrss.New(logger, cfg, categoryHandler, feedHandler, entryHandler)
+	app.AddOnExit(closeFn)
+	if err := app.Run(); err != nil {
+		logger.Fatalln("application exited with error: ", err)
 	}
-}
-
-func index(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "webrss/templates/index.html")
-}
-
-func favicon(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, "webrss/static/images/favicon.ico")
 }
 
 func initDB(cfg *config.Config) (*sqlx.DB, error, func()) {

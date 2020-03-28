@@ -45,7 +45,7 @@ func main() {
 	feedRepository := repository.NewFeedRepository(db)
 	entryRepository := repository.NewEntryRepository(db, cfg.PerPage)
 	transactionRepository := repository.NewTransactionRepository(db)
-	feedService := webrss.NewFeedService(logger, feedRepository, entryRepository, transactionRepository, httpClient, feedFetcher)
+	feedService := webrss.NewService(logger, nil, feedRepository, entryRepository, transactionRepository, httpClient, feedFetcher)
 	updateService := updater.New(feedRepository, feedService, feedFetcher, logger)
 	if err := updateService.Run(context.Background()); err != nil {
 		logger.Println("got error updating feeds:", err)
