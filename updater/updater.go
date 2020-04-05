@@ -15,7 +15,7 @@ type feedRepository interface {
 	List(ctx context.Context) ([]repository.Feed, error)
 }
 
-type feedService interface {
+type webrssService interface {
 	SaveEntries(ctx context.Context, feedID int64, entries []repository.Entry) error
 }
 
@@ -25,15 +25,15 @@ type feedFetcher interface {
 
 type UpdateService struct {
 	feedRepository feedRepository
-	feedService    feedService
+	webrssService  webrssService
 	feedFetcher    feedFetcher
 	logger         *log.Logger
 }
 
-func New(feedRepository feedRepository, feedService feedService, feedFetcher feedFetcher, logger *log.Logger) UpdateService {
+func New(feedRepository feedRepository, webrssService webrssService, feedFetcher feedFetcher, logger *log.Logger) UpdateService {
 	return UpdateService{
 		feedRepository: feedRepository,
-		feedService:    feedService,
+		webrssService:  webrssService,
 		feedFetcher:    feedFetcher,
 		logger:         logger,
 	}
@@ -54,7 +54,7 @@ func (u UpdateService) Run(ctx context.Context) error {
 				return nil
 			}
 			entries := feeder.Entries(ctx)
-			if err := u.feedService.SaveEntries(ctx, feed.ID, entries); err != nil {
+			if err := u.webrssService.SaveEntries(ctx, feed.ID, entries); err != nil {
 				return fmt.Errorf("cannot save entry: %w", err)
 			}
 			return nil

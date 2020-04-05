@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"flag"
 	"fmt"
@@ -8,6 +9,9 @@ import (
 	"net/http"
 	"os"
 	"runtime/debug"
+	"time"
+
+	"github.com/Alkemic/webrss/updater"
 
 	"github.com/Alkemic/go-route"
 	_ "github.com/go-sql-driver/mysql"
@@ -44,8 +48,10 @@ func main() {
 	categoryHandler := handler.NewCategory(logger, webrssService)
 	entryHandler := handler.NewEntry(logger, webrssService)
 	feedHandler := handler.NewFeed(logger, webrssService)
-	app := webrss.New(logger, cfg, categoryHandler, feedHandler, entryHandler)
+	updateService := updater.New(feedRepository, webrssService, feedFetcher, logger)
+	app := webrss.New(logger, cfg, categoryHandler, feedHandler, entryHandler, updateService, time.Hour)
 	app.AddOnExit(closeFn)
+	go app.Updater(context.Background())
 	if err := app.Run(); err != nil {
 		logger.Fatalln("application exited with error: ", err)
 	}

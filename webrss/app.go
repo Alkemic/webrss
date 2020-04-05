@@ -1,9 +1,11 @@
 package webrss
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/Alkemic/go-route"
 	"github.com/Alkemic/go-route/middleware"
@@ -15,6 +17,10 @@ type handler interface {
 	GetRoutes() route.RegexpRouter
 }
 
+type feedsUpdater interface {
+	Run(ctx context.Context) error
+}
+
 type App struct {
 	logger          *log.Logger
 	cfg             *config.Config
@@ -22,17 +28,21 @@ type App struct {
 	categoryHandler handler
 	feedHandler     handler
 	entryHandler    handler
+	feedsUpdater    feedsUpdater
+	updaterInterval time.Duration
 
 	onExit []func()
 }
 
-func New(logger *log.Logger, cfg *config.Config, categoryHandler handler, feedHandler handler, entryHandler handler) App {
+func New(logger *log.Logger, cfg *config.Config, categoryHandler handler, feedHandler handler, entryHandler handler, feedsUpdater feedsUpdater, updaterInterval time.Duration) App {
 	app := App{
 		logger:          logger,
 		cfg:             cfg,
 		categoryHandler: categoryHandler,
 		feedHandler:     feedHandler,
 		entryHandler:    entryHandler,
+		feedsUpdater:    feedsUpdater,
+		updaterInterval: updaterInterval,
 	}
 	app.routes.Add("^/api/category", categoryHandler.GetRoutes())
 	app.routes.Add("^/api/entry", entryHandler.GetRoutes())
@@ -64,5 +74,15 @@ func (a *App) AddOnExit(fn func()) {
 func (a *App) execOnExit() {
 	for _, fn := range a.onExit {
 		fn()
+	}
+}
+
+func (a App) Updater(ctx context.Context) error {
+	ticker := time.NewTicker(a.updaterInterval)
+	for {
+		if err := a.feedsUpdater.Run(ctx); err != nil {
+			a.logger.Println("task returned an error: ", err)
+		}
+		<-ticker.C
 	}
 }
