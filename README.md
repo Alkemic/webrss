@@ -1,22 +1,24 @@
 # WebRSS
 
-Web RSS client written in Python using Flask, peewee and AngularJS.
+Web RSS client written in Go and AngularJS.
 
-## Installation
+## Running (dockerised)
+* ``docker run --name webrss -d alkemic/webrss``
+* See [docker-compose.yml](./docker-compose.yml) for details on usage with docker compose
 
-* Clone this repo ``git clone https://github.com/Alkemic/webrss``
-* Install libraries required for ``lxml``: ``aptitude install libxml2-dev libxslt1-dev python-dev``
-* Install all dependencies ``pip install -r requirements.txt``
-* Install database ``./scripts/create_tables.py``
-* Add feed collector to crontab ``./scripts/collect_feeds.py``
-* For testing use ``./run.py``
+## Running
 
-### Using MySQL/MariaDB
+* Build backend
+  * Get source ``git clone https://github.com/Alkemic/webrss/``
+  * Build & install ``go install ./cmd/webrss/``
+* Build frontend
+  * Download dependencies ``npm i``
+  * Build frontend ``./node_modules/.bin/gulp build``
+* Run from main folder ``webrss``
 
-* Install client dev packages: ``sudo aptitude install libmysqlclient-dev`` or ``sudo aptitude install libmariadbclient-dev``
-* Install mysql client ``pip install mysqlclient==1.3.10``, at this moment version 1.3.10 is fully working
+## Database
 
-## TODO
-
-* Authorisation
-* Unittest
+* Install [golang migrate](https://github.com/golang-migrate/migrate/tree/master/cmd/migrate#installation)
+* Create database ``CREATE DATABASE `webrss3` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;``, 
+utf8mb4 is required, as many sites uses emojis
+* Migrate using ``migrate -path ./migrations/ -database "mysql://root:toor@tcp(localhost:3306)/webrss" up``
