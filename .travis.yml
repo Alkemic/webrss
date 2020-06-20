@@ -1,6 +1,10 @@
 sudo: required
 
-language: python
+language: go
+
+go:
+  - 1.13.x
+  - 1.14.x
 
 services:
   - docker
@@ -34,4 +38,5 @@ after_success:
 
 env:
   global:
-    secure: Ln0TtIs3kJ/3q/hM9XktyKUrnKYfag0V/ikQD11qbFn+qcS5QpnhCSUVRulekh++NBc8YcjnOtg+kPI+XE40q4MnCABPr8ESm8Bz7FMwETQXE90IrH6dmgD5bArXEM9q2qNRdwe5waa7mA3lzm35E9m2dswvxwH6iYN0okc6K4o=
+    - GO111MODULE: on
+    - secure: Ln0TtIs3kJ/3q/hM9XktyKUrnKYfag0V/ikQD11qbFn+qcS5QpnhCSUVRulekh++NBc8YcjnOtg+kPI+XE40q4MnCABPr8ESm8Bz7FMwETQXE90IrH6dmgD5bArXEM9q2qNRdwe5waa7mA3lzm35E9m2dswvxwH6iYN0okc6K4o=

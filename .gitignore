@@ -59,3 +59,4 @@ config.py
 venv
 webrss.db
 .env
+config.yml

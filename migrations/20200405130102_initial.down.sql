@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS `category`;
+DROP TABLE IF EXISTS `entry`;
+DROP TABLE IF EXISTS `feed`;
