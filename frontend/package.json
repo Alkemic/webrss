@@ -6,7 +6,7 @@
   "author": "Daniel Alkemic Czuba <alkemic7@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "angular": "1.7.8",
+    "angular": "1.8.0",
     "angular-resource": "1.7.8",
     "angular-sanitize": "1.7.8",
     "angular-ui-bootstrap": "2.5.6",
