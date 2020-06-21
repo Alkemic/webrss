@@ -17,7 +17,7 @@ RUN cd frontend && \
 FROM scratch
 
 COPY --from=backend /build/webrss-app /webrss
-COPY --from=frontend /build/static/* /static/
+COPY --from=frontend /build/static /static/
 COPY templates/* /templates/
 
 ENTRYPOINT ["/webrss"]
