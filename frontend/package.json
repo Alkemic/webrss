@@ -1,14 +1,18 @@
 {
   "name": "webrss-frontend",
-  "version": "0.0.1",
+  "version": "0.10.0",
   "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Alkemic/webrss.git"
+  },
   "main": "index.js",
   "author": "Daniel Alkemic Czuba <alkemic7@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "angular": "1.7.8",
-    "angular-resource": "1.7.8",
-    "angular-sanitize": "1.7.8",
+    "angular": "1.8.0",
+    "angular-resource": "1.8.0",
+    "angular-sanitize": "1.8.0",
     "angular-ui-bootstrap": "2.5.6",
     "bootstrap": "3.4.1",
     "jquery": "3.5.0"
@@ -17,8 +21,10 @@
     "@babel/core": "7.4.4",
     "babel-plugin-angularjs-annotate": "0.10.0",
     "babel-preset-minify": "0.5.0",
+    "caniuse-lite": "1.0.30001085",
     "del": "4.1.0",
     "eslint": "5.16.0",
+    "eslint-utils": "1.4.1",
     "gulp": "4.0.1",
     "gulp-autoprefixer": "6.1.0",
     "gulp-babel": "8.0.0",
@@ -27,6 +33,9 @@
     "gulp-less": "4.0.1",
     "gulp-ng-templates": "1.0.2",
     "gulp-sourcemaps": "2.6.5",
-    "less-plugin-clean-css": "1.5.1"
+    "less-plugin-clean-css": "1.5.1",
+    "set-value": "3.0.2",
+    "minimist": "0.2.1",
+    "lodash.template": "4.5.0"
   }
 }
