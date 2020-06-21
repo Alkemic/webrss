@@ -8,13 +8,11 @@ services:
     links:
       - db
     environment:
-      - DB_TYPE=mysql
-      - DB_HOST=db
-      - DB_PORT=3306
-      - DB_USER=root
-      - DB_NAME=webrss
+      - DB_DSN=root:@tcp(127.0.0.1:13306)/webrss?parseTime=true
+      - BIND_ADDR=:8080
+      - PER_PAGE=75
     ports:
-      - 8000:8000
+      - 8080:8080
 
   db:
     image: mysql:5.6

@@ -14,6 +14,10 @@ Web RSS client written in Go and AngularJS.
 * Build frontend
   * Download dependencies ``npm i``
   * Build frontend ``./node_modules/.bin/gulp build``
+* Setup environment varaibles
+  * `DB_DSN` - the DSN for database, ie: `root:@tcp(127.0.0.1:13306)/webrss?parseTime=true`, mind the `parseTime=true` part
+  * `BIND_ADDR` - bind address, ie: `:8080`
+  * (optional) `PER_PAGE` - how many entries will be loaded when feed is selected
 * Run from main folder ``webrss``
 
 ## Database
