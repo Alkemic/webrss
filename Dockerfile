@@ -16,6 +16,8 @@ RUN cd frontend && \
 
 FROM scratch
 
+COPY --from=backend /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=backend /build/migrations /migrations
 COPY --from=backend /build/webrss-app /webrss
 COPY --from=frontend /build/static /static/
 COPY templates/* /templates/
