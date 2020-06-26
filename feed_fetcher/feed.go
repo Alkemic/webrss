@@ -57,7 +57,7 @@ func (f Feed) Entries(_ context.Context) []repository.Entry {
 		}
 		entries = append(entries, repository.Entry{
 			Title:       item.Title,
-			Summary:     repository.NewNullString(item.Content),
+			Summary:     repository.NewNullString(item.Description),
 			Author:      parseAuthor(item.Author),
 			Link:        item.Link,
 			PublishedAt: publishedAt,
