@@ -50,7 +50,7 @@ func (u UpdateService) Run(ctx context.Context) error {
 		g.Go(func() error {
 			feeder, err := u.feedFetcher.Fetch(ctx, feed.FeedUrl)
 			if err != nil {
-				u.logger.Println("error fetching feed:", err)
+				u.logger.Printf("error fetching feed %s: %v\n", feed.FeedUrl, err)
 				return nil
 			}
 			entries := feeder.Entries(ctx)
