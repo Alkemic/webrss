@@ -55,9 +55,13 @@ func (f Feed) Entries(_ context.Context) []repository.Entry {
 		} else if item.UpdatedParsed != nil {
 			publishedAt = repository.NewTime(*item.UpdatedParsed)
 		}
+		summary := item.Content
+		if len(summary) == 0 {
+			summary = item.Description
+		}
 		entries = append(entries, repository.Entry{
 			Title:       item.Title,
-			Summary:     repository.NewNullString(item.Description),
+			Summary:     repository.NewNullString(summary),
 			Author:      parseAuthor(item.Author),
 			Link:        item.Link,
 			PublishedAt: publishedAt,
