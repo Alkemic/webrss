@@ -10,7 +10,7 @@ const defaultPerPage = 50
 type Config struct {
 	DBDSN   string
 	BindAdr string
-	PerPage uint64
+	PerPage int
 }
 
 func LoadConfig() *Config {
@@ -25,6 +25,6 @@ func LoadConfig() *Config {
 	return &Config{
 		DBDSN:   os.Getenv("DB_DSN"),
 		BindAdr: os.Getenv("BIND_ADDR"),
-		PerPage: uint64(perPage),
+		PerPage: perPage,
 	}
 }

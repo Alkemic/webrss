@@ -36,7 +36,7 @@ func (m *entryRepositoryMock) GetByURL(ctx context.Context, url string) (reposit
 	return m.getEntryByURLResp[url], m.getEntryByURLErr[url]
 }
 
-func (m *entryRepositoryMock) ListForFeed(ctx context.Context, feedID, page int64) ([]repository.Entry, error) {
+func (m *entryRepositoryMock) ListForFeed(ctx context.Context, feedID, page int64, perPage int) ([]repository.Entry, error) {
 	panic("implement me!")
 }
 

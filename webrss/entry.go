@@ -11,13 +11,13 @@ import (
 type entryRepository interface {
 	Get(ctx context.Context, id int64) (repository.Entry, error)
 	GetByURL(ctx context.Context, url string) (repository.Entry, error)
-	ListForFeed(ctx context.Context, feedID, page int64) ([]repository.Entry, error)
+	ListForFeed(ctx context.Context, feedID, page int64, perPage int) ([]repository.Entry, error)
 	Update(ctx context.Context, entry repository.Entry) error
 	Create(ctx context.Context, entry repository.Entry) error
 }
 
-func (s WebRSSService) ListEntriesForFeed(ctx context.Context, feedID, page int64) ([]repository.Entry, error) {
-	entries, err := s.entryRepository.ListForFeed(ctx, feedID, page)
+func (s WebRSSService) ListEntriesForFeed(ctx context.Context, feedID, page int64, perPage int) ([]repository.Entry, error) {
+	entries, err := s.entryRepository.ListForFeed(ctx, feedID, page, perPage)
 	if err != nil {
 		return nil, fmt.Errorf("error fetching entries for feed %d: %w", feedID, err)
 	}

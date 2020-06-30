@@ -26,14 +26,12 @@ values (:title, :author, :summary, :link, :published_at, :feed_id, :read_at, :cr
 )
 
 type entryRepository struct {
-	db      *sqlx.DB
-	perPage uint64
+	db *sqlx.DB
 }
 
-func NewEntryRepository(db *sqlx.DB, perPage uint64) *entryRepository {
+func NewEntryRepository(db *sqlx.DB) *entryRepository {
 	return &entryRepository{
-		db:      db,
-		perPage: perPage,
+		db: db,
 	}
 }
 
@@ -53,9 +51,9 @@ func (r *entryRepository) GetByURL(ctx context.Context, url string) (Entry, erro
 	return entry, nil
 }
 
-func (r *entryRepository) ListForFeed(ctx context.Context, feedID, page int64) ([]Entry, error) {
+func (r *entryRepository) ListForFeed(ctx context.Context, feedID, page int64, perPage int) ([]Entry, error) {
 	entries := []Entry{}
-	if err := r.db.SelectContext(ctx, &entries, selectEntriesForFeedQuery, feedID, r.perPage, r.perPage*uint64(page-1)); err != nil {
+	if err := r.db.SelectContext(ctx, &entries, selectEntriesForFeedQuery, feedID, perPage, perPage*int(page-1)); err != nil {
 		return nil, fmt.Errorf("cannot select entries: %w", err)
 	}
 	return entries, nil

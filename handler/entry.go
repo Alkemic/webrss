@@ -16,12 +16,14 @@ import (
 type entryHandler struct {
 	logger        *log.Logger
 	webrssService webrssService
+	perPage       int
 }
 
-func NewEntry(logger *log.Logger, webrssService webrssService) *entryHandler {
+func NewEntry(logger *log.Logger, webrssService webrssService, perPage int) *entryHandler {
 	return &entryHandler{
 		logger:        logger,
 		webrssService: webrssService,
+		perPage:       perPage,
 	}
 }
 
@@ -67,15 +69,25 @@ func (h *entryHandler) List(rw http.ResponseWriter, req *http.Request) {
 		page = 1
 	}
 
-	entries, err := h.webrssService.ListEntriesForFeed(req.Context(), int64(feedID), int64(page))
+	entries, err := h.webrssService.ListEntriesForFeed(req.Context(), int64(feedID), int64(page), h.perPage)
 	if err != nil {
 		h.logger.Println("cannot fetch entries: ", err)
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+
+	nextPage := ""
+	if len(entries) == h.perPage {
+		nextPage = fmt.Sprintf("/api/entry/?feed=%d&page=%d", feedID, page+1)
+	}
+	for _, entry := range entries {
+		log.Println(entry.ID, entries[len(entries)-1].ID)
+	}
 	data := map[string]interface{}{
 		"objects": entries,
+		"meta":    map[string]string{"next": nextPage},
 	}
+
 	if err := json.NewEncoder(rw).Encode(data); err != nil {
 		h.logger.Println("cannot serialize entries: ", err)
 	}

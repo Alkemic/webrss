@@ -42,11 +42,11 @@ func main() {
 
 	categoryRepository := repository.NewCategoryRepository(db)
 	feedRepository := repository.NewFeedRepository(db)
-	entryRepository := repository.NewEntryRepository(db, cfg.PerPage)
+	entryRepository := repository.NewEntryRepository(db)
 	transactionRepository := repository.NewTransactionRepository(db)
 	webrssService := webrss.NewService(logger, categoryRepository, feedRepository, entryRepository, transactionRepository, httpClient, feedFetcher)
 	categoryHandler := handler.NewCategory(logger, webrssService)
-	entryHandler := handler.NewEntry(logger, webrssService)
+	entryHandler := handler.NewEntry(logger, webrssService, cfg.PerPage)
 	feedHandler := handler.NewFeed(logger, webrssService)
 	updateService := updater.New(feedRepository, webrssService, feedFetcher, logger)
 	app := webrss.New(logger, cfg, categoryHandler, feedHandler, entryHandler, updateService, time.Hour)
