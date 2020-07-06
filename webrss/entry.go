@@ -10,7 +10,7 @@ import (
 
 type entryRepository interface {
 	Get(ctx context.Context, id int64) (repository.Entry, error)
-	GetByURL(ctx context.Context, url string) (repository.Entry, error)
+	GetByURL(ctx context.Context, url string, feedID int64) (repository.Entry, error)
 	ListForFeed(ctx context.Context, feedID, page int64, perPage int) ([]repository.Entry, error)
 	Update(ctx context.Context, entry repository.Entry) error
 	Create(ctx context.Context, entry repository.Entry) error

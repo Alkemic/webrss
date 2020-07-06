@@ -80,9 +80,6 @@ func (h *entryHandler) List(rw http.ResponseWriter, req *http.Request) {
 	if len(entries) == h.perPage {
 		nextPage = fmt.Sprintf("/api/entry/?feed=%d&page=%d", feedID, page+1)
 	}
-	for _, entry := range entries {
-		log.Println(entry.ID, entries[len(entries)-1].ID)
-	}
 	data := map[string]interface{}{
 		"objects": entries,
 		"meta":    map[string]string{"next": nextPage},

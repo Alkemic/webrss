@@ -15,7 +15,7 @@ where e.deleted_at is null and e.feed_id = ?
 ORDER BY e.published_at DESC
 LIMIT ? OFFSET ?;`
 	getEntryQuery      = `SELECT * FROM entry e where e.deleted_at is null and id = ?;`
-	getEntryByURLQuery = `SELECT * FROM entry e where e.deleted_at is null and link = ?;`
+	getEntryByURLQuery = `SELECT * FROM entry e where e.deleted_at is null and link = ? and feed_id = ?;`
 	updateEntryQuery   = `
 update entry 
 set title = :title, author = :author, summary = :summary, link = :link, published_at = :published_at, 
@@ -43,9 +43,9 @@ func (r *entryRepository) Get(ctx context.Context, id int64) (Entry, error) {
 	return entry, nil
 }
 
-func (r *entryRepository) GetByURL(ctx context.Context, url string) (Entry, error) {
+func (r *entryRepository) GetByURL(ctx context.Context, url string, feedID int64) (Entry, error) {
 	entry := Entry{}
-	if err := r.db.GetContext(ctx, &entry, getEntryByURLQuery, url); err != nil {
+	if err := r.db.GetContext(ctx, &entry, getEntryByURLQuery, url, feedID); err != nil {
 		return Entry{}, fmt.Errorf("cannot fetch entry (url=%s): %w", url, err)
 	}
 	return entry, nil

@@ -62,7 +62,7 @@ func updateEntry(a, b repository.Entry) repository.Entry {
 func (s WebRSSService) SaveEntries(ctx context.Context, feedID int64, entries []repository.Entry) error {
 	now := repository.NewTime(s.nowFn())
 	for _, entry := range entries {
-		existingEntry, err := s.entryRepository.GetByURL(ctx, entry.Link)
+		existingEntry, err := s.entryRepository.GetByURL(ctx, entry.Link, feedID)
 		if err != nil && !errors.Is(err, sql.ErrNoRows) {
 			return fmt.Errorf("error fetching entry: %w", err)
 		} else if errors.Is(err, sql.ErrNoRows) {
