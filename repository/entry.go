@@ -14,6 +14,12 @@ FROM entry e
 where e.deleted_at is null and e.feed_id = ?
 ORDER BY e.published_at DESC
 LIMIT ? OFFSET ?;`
+	selectEntriesForPhraseQuery = `
+select *
+from entry e
+where e.deleted_at is null and e.title like ? and e.summary like ?
+order by e.published_at desc
+limit ? offset ?;`
 	getEntryQuery      = `SELECT * FROM entry e where e.deleted_at is null and id = ?;`
 	getEntryByURLQuery = `SELECT * FROM entry e where e.deleted_at is null and link = ? and feed_id = ?;`
 	updateEntryQuery   = `
@@ -54,6 +60,15 @@ func (r *entryRepository) GetByURL(ctx context.Context, url string, feedID int64
 func (r *entryRepository) ListForFeed(ctx context.Context, feedID, page int64, perPage int) ([]Entry, error) {
 	entries := []Entry{}
 	if err := r.db.SelectContext(ctx, &entries, selectEntriesForFeedQuery, feedID, perPage, perPage*int(page-1)); err != nil {
+		return nil, fmt.Errorf("cannot select entries: %w", err)
+	}
+	return entries, nil
+}
+
+func (r *entryRepository) ListForPhrase(ctx context.Context, phrase string, page int64, perPage int) ([]Entry, error) {
+	phrase = "%" + phrase + "%"
+	entries := []Entry{}
+	if err := r.db.SelectContext(ctx, &entries, selectEntriesForPhraseQuery, phrase, phrase, perPage, perPage*int(page-1)); err != nil {
 		return nil, fmt.Errorf("cannot select entries: %w", err)
 	}
 	return entries, nil

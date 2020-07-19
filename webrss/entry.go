@@ -12,6 +12,7 @@ type entryRepository interface {
 	Get(ctx context.Context, id int64) (repository.Entry, error)
 	GetByURL(ctx context.Context, url string, feedID int64) (repository.Entry, error)
 	ListForFeed(ctx context.Context, feedID, page int64, perPage int) ([]repository.Entry, error)
+	ListForPhrase(ctx context.Context, phrase string, page int64, perPage int) ([]repository.Entry, error)
 	Update(ctx context.Context, entry repository.Entry) error
 	Create(ctx context.Context, entry repository.Entry) error
 }
@@ -62,4 +63,13 @@ func (s WebRSSService) GetEntry(ctx context.Context, id int64) (repository.Entry
 	entry.NewEntry = entry.CreatedAt.After(entry.Feed.LastReadAt)
 
 	return entry, nil
+}
+
+func (s WebRSSService) Search(ctx context.Context, phrase string, page int64, perPage int) ([]repository.Entry, error) {
+	entries, err := s.entryRepository.ListForPhrase(ctx, phrase, page, perPage)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching entries for phrase %s: %w", phrase, err)
+	}
+
+	return entries, nil
 }

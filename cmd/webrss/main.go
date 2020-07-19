@@ -28,7 +28,7 @@ import (
 func main() {
 	flag.Parse()
 
-	logger := log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile|log.Ldate)
+	logger := log.New(os.Stdout, "", log.LstdFlags|log.Llongfile|log.Ldate)
 	cfg := config.LoadConfig()
 	db, err, closeFn := initDB(cfg)
 	if err != nil {

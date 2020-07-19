@@ -34,6 +34,7 @@ type webrssService interface {
 	SaveEntries(ctx context.Context, feedID int64, entries []repository.Entry) error
 
 	GetEntry(ctx context.Context, id int64) (repository.Entry, error)
+	Search(ctx context.Context, phrase string, page int64, perPage int) ([]repository.Entry, error)
 	ListEntriesForFeed(ctx context.Context, feedID, page int64, perPage int) ([]repository.Entry, error)
 }
 

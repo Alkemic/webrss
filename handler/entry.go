@@ -52,6 +52,54 @@ func (h *entryHandler) Get(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func getPage(req *http.Request) (int64, error) {
+	page, ok, err := getIntParam("page", req)
+	if err != nil && ok {
+		return 0, err
+	}
+	if page < 1 {
+		page = 1
+	}
+	return int64(page), nil
+}
+
+func (h *entryHandler) Search(rw http.ResponseWriter, req *http.Request) {
+	query := req.URL.Query()
+	phrase := query.Get("phrase")
+	if phrase == "" {
+		h.logger.Println("missing phrase in request")
+		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	page, err := getPage(req)
+	if err != nil {
+		h.logger.Println(err)
+		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	entries, err := h.webrssService.Search(req.Context(), phrase, page, h.perPage)
+	if err != nil {
+		h.logger.Println("cannot fetch entries: ", err)
+		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	nextPage := ""
+	if len(entries) == h.perPage {
+		nextPage = fmt.Sprintf("/api/search/?phrase=%d&page=%d", phrase, page+1)
+	}
+	data := map[string]interface{}{
+		"objects": entries,
+		"meta":    map[string]string{"next": nextPage},
+	}
+
+	if err := json.NewEncoder(rw).Encode(data); err != nil {
+		h.logger.Println("cannot serialize entries: ", err)
+	}
+}
+
 func (h *entryHandler) List(rw http.ResponseWriter, req *http.Request) {
 	feedID, _, err := getIntParam("feed", req)
 	if err != nil {
@@ -59,17 +107,14 @@ func (h *entryHandler) List(rw http.ResponseWriter, req *http.Request) {
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	page, ok, err := getIntParam("page", req)
-	if err != nil && ok {
+	page, err := getPage(req)
+	if err != nil {
 		h.logger.Println(err)
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	if page < 1 {
-		page = 1
-	}
 
-	entries, err := h.webrssService.ListEntriesForFeed(req.Context(), int64(feedID), int64(page), h.perPage)
+	entries, err := h.webrssService.ListEntriesForFeed(req.Context(), int64(feedID), page, h.perPage)
 	if err != nil {
 		h.logger.Println("cannot fetch entries: ", err)
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -117,6 +162,7 @@ func (r *entryHandler) GetRoutes() route.RegexpRouter {
 
 	routing := route.RegexpRouter{}
 	routing.Add(`^/?$`, setHeaders(collection.Dispatch))
+	routing.Add(`^/search/?$`, setHeaders(r.Search))
 	routing.Add(`^/(?P<id>\d+)/?$`, setHeaders(resource.Dispatch))
 
 	return routing

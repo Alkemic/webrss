@@ -125,7 +125,7 @@ App.controller("RSSCtrl", ($scope, $http, $sce, $uibModal, $location) => {
         if (!!(match = /^\/search=(.*)/.exec($location.url()))) {
             let phrase = decodeURI(match[1])
             $scope.search = phrase
-            $http.get(`/api/entry/?title__ilike=%${phrase}%&summary__ilike=%${phrase}%`)
+            $http.get(`/api/entry/search/?phrase=${phrase}`)
                 .then(res => {
                     $scope.feeds.entries.list = res.data
                     $scope.feeds.selected = null
