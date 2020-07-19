@@ -77,7 +77,11 @@ func (a *App) execOnExit() {
 	}
 }
 
-func (a App) Updater(ctx context.Context) error {
+func (a App) Updater(ctx context.Context) {
+	if !a.cfg.RunUpdater {
+		a.logger.Println("updater won't be running")
+		return
+	}
 	ticker := time.NewTicker(a.updaterInterval)
 	for {
 		if err := a.feedsUpdater.Run(ctx); err != nil {
