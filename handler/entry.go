@@ -88,7 +88,7 @@ func (h *entryHandler) Search(rw http.ResponseWriter, req *http.Request) {
 
 	nextPage := ""
 	if len(entries) == h.perPage {
-		nextPage = fmt.Sprintf("/api/search/?phrase=%d&page=%d", phrase, page+1)
+		nextPage = fmt.Sprintf("/api/entry/search/?phrase=%s&page=%d", phrase, page+1)
 	}
 	data := map[string]interface{}{
 		"objects": entries,
