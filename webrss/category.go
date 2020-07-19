@@ -55,13 +55,29 @@ func (s WebRSSService) CreateCategory(ctx context.Context, category repository.C
 }
 
 func (s WebRSSService) DeleteCategory(ctx context.Context, id int64) error {
+	s.transactionRepository.Begin(ctx)
+	defer s.transactionRepository.Commit(ctx)
 	category, err := s.GetCategory(ctx, id)
 	if err != nil {
+		s.transactionRepository.Rollback(ctx)
 		return fmt.Errorf("cannot fetch catory for delete: %w", err)
 	}
 	category.DeletedAt = repository.NewNullTime(s.nowFn())
 	if err := s.UpdateCategory(ctx, category); err != nil {
+		s.transactionRepository.Rollback(ctx)
 		return fmt.Errorf("error deleting category: %w", err)
+	}
+
+	feeds, err := s.feedRepository.ListForCategories(ctx, []int64{category.ID})
+	if err != nil {
+		s.transactionRepository.Rollback(ctx)
+		return fmt.Errorf("error fetching feeds: %w", err)
+	}
+	for _, feed := range feeds {
+		if err := s.DeleteFeed(ctx, feed); err != nil {
+			s.transactionRepository.Rollback(ctx)
+			return fmt.Errorf("error deleteing feed: %w", err)
+		}
 	}
 	return nil
 }
