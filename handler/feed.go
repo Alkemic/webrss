@@ -12,7 +12,6 @@ import (
 	"github.com/Alkemic/go-route/middleware"
 	"gopkg.in/go-playground/validator.v9"
 
-	httphelper "github.com/Alkemic/webrss/http"
 	"github.com/Alkemic/webrss/repository"
 	"github.com/Alkemic/webrss/webrss"
 )
@@ -64,7 +63,7 @@ func (h *feedHandler) Create(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (h *feedHandler) Update(rw http.ResponseWriter, req *http.Request) {
-	id, err := httphelper.GetIntParam(req, "id")
+	id, err := requestIntParam(req, "id")
 	if err != nil {
 		h.logger.Println("cannot get param 'id': ", err)
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)

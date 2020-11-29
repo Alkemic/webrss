@@ -53,7 +53,7 @@ func (h *entryHandler) Get(rw http.ResponseWriter, req *http.Request) {
 }
 
 func getPage(req *http.Request) (int64, error) {
-	page, ok, err := getIntParam("page", req)
+	page, ok, err := routeIntParam("page", req)
 	if err != nil && ok {
 		return 0, err
 	}
@@ -101,7 +101,7 @@ func (h *entryHandler) Search(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (h *entryHandler) List(rw http.ResponseWriter, req *http.Request) {
-	feedID, _, err := getIntParam("feed", req)
+	feedID, _, err := routeIntParam("feed", req)
 	if err != nil {
 		h.logger.Println(err)
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -133,19 +133,6 @@ func (h *entryHandler) List(rw http.ResponseWriter, req *http.Request) {
 	if err := json.NewEncoder(rw).Encode(data); err != nil {
 		h.logger.Println("cannot serialize entries: ", err)
 	}
-}
-
-func getIntParam(key string, req *http.Request) (int, bool, error) {
-	query := req.URL.Query()
-	rawValue := query.Get(key)
-	if rawValue == "" {
-		return 0, false, fmt.Errorf("missing '%s' param", key)
-	}
-	value, err := strconv.Atoi(rawValue)
-	if err != nil {
-		return 0, true, fmt.Errorf("'%s' is not int: %w", key, err)
-	}
-	return value, true, nil
 }
 
 func (r *entryHandler) GetRoutes() *route.RegexpRouter {

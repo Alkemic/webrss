@@ -12,7 +12,6 @@ import (
 	"github.com/Alkemic/go-route/middleware"
 	"gopkg.in/go-playground/validator.v9"
 
-	httphelper "github.com/Alkemic/webrss/http"
 	"github.com/Alkemic/webrss/repository"
 	"github.com/Alkemic/webrss/webrss"
 )
@@ -101,7 +100,7 @@ func (h *categoryHandler) Create(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (h *categoryHandler) Update(rw http.ResponseWriter, req *http.Request) {
-	id, err := httphelper.GetIntParam(req, "id")
+	id, err := requestIntParam(req, "id")
 	if err != nil {
 		h.logger.Println("cannot get param 'id': ", err)
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -143,7 +142,7 @@ func (h *categoryHandler) Update(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (h *categoryHandler) MoveUp(rw http.ResponseWriter, req *http.Request) {
-	id, err := httphelper.GetIntParam(req, "id")
+	id, err := requestIntParam(req, "id")
 	if err != nil {
 		h.logger.Println("cannot get param 'id': ", err)
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -158,7 +157,7 @@ func (h *categoryHandler) MoveUp(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (h *categoryHandler) MoveDown(rw http.ResponseWriter, req *http.Request) {
-	id, err := httphelper.GetIntParam(req, "id")
+	id, err := requestIntParam(req, "id")
 	if err != nil {
 		h.logger.Println("cannot get param 'id': ", err)
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
@@ -173,7 +172,7 @@ func (h *categoryHandler) MoveDown(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (h *categoryHandler) Delete(rw http.ResponseWriter, req *http.Request) {
-	id, err := httphelper.GetIntParam(req, "id")
+	id, err := requestIntParam(req, "id")
 	if err != nil {
 		h.logger.Println("cannot get param 'id': ", err)
 		http.Error(rw, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
