@@ -148,7 +148,7 @@ func getIntParam(key string, req *http.Request) (int, bool, error) {
 	return value, true, nil
 }
 
-func (r *entryHandler) GetRoutes() route.RegexpRouter {
+func (r *entryHandler) GetRoutes() *route.RegexpRouter {
 	resource := webrss.RESTEndPoint{
 		Get: r.Get,
 	}
@@ -160,7 +160,7 @@ func (r *entryHandler) GetRoutes() route.RegexpRouter {
 		"Content-Type": "application/json; charset=utf-8",
 	})
 
-	routing := route.RegexpRouter{}
+	routing := route.New()
 	routing.Add(`^/?$`, setHeaders(collection.Dispatch))
 	routing.Add(`^/search/?$`, setHeaders(r.Search))
 	routing.Add(`^/(?P<id>\d+)/?$`, setHeaders(resource.Dispatch))

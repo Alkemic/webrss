@@ -187,7 +187,7 @@ func (h *categoryHandler) Delete(rw http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(rw, `{"status":"ok"}`)
 }
 
-func (h *categoryHandler) GetRoutes() route.RegexpRouter {
+func (h *categoryHandler) GetRoutes() *route.RegexpRouter {
 	resource := webrss.RESTEndPoint{
 		Delete: h.Delete,
 		Post:   h.Update,
@@ -201,7 +201,7 @@ func (h *categoryHandler) GetRoutes() route.RegexpRouter {
 		"Content-Type": "application/json; charset=utf-8",
 	})
 
-	routing := route.RegexpRouter{}
+	routing := route.New()
 	routing.Add(`^/?$`, setHeaders(collection.Dispatch))
 	routing.Add(`^/(?P<id>\d+)/$`, setHeaders(resource.Dispatch))
 	routing.Add(`^/(?P<id>\d+)/move_up$`, setHeaders(middleware.AllowedMethods([]string{http.MethodPost})(h.MoveUp)))

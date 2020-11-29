@@ -26,3 +26,7 @@ Web RSS client written in Go and AngularJS.
 * Create database ``CREATE DATABASE `webrss3` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;``, 
 utf8mb4 is required, as many sites uses emojis
 * Migrate using ``migrate -path ./migrations/ -database "mysql://root:toor@tcp(localhost:3306)/webrss" up``
+
+## Auth
+
+* Default email / password is `admin@webrss.web` / `admin`

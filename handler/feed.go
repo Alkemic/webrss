@@ -135,7 +135,7 @@ func (h *feedHandler) Delete(rw http.ResponseWriter, req *http.Request) {
 	fmt.Fprint(rw, `{"status":"ok"}`)
 }
 
-func (r *feedHandler) GetRoutes() route.RegexpRouter {
+func (r *feedHandler) GetRoutes() *route.RegexpRouter {
 	resource := webrss.RESTEndPoint{
 		Delete: r.Delete,
 		Put:    r.Update,
@@ -148,7 +148,7 @@ func (r *feedHandler) GetRoutes() route.RegexpRouter {
 		"Content-Type": "application/json; charset=utf-8",
 	})
 
-	routing := route.RegexpRouter{}
+	routing := route.New()
 	routing.Add(`^/?$`, setHeaders(collection.Dispatch))
 	routing.Add(`^/(?P<id>\d+)/?$`, setHeaders(resource.Dispatch))
 

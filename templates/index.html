@@ -55,6 +55,14 @@
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
                         <li>
+                            <button class="btn btn-primary btn-sm" ng-click="editUser([[ marshal .User ]])">
+                                <i class="glyphicon glyphicon-user"></i> Edit user [[ .User.Name ]]
+                            </button>
+                        </li>
+                        <li>
+                            <a href="[[ .LogoutURL ]]"><i class="glyphicon glyphicon-log-out"></i> Logout</a>
+                        </li>
+                        <li>
                             <form class="navbar-form navbar-left search" role="search" id="search" ng-submit="doSearch()">
                                 <div class="form-group">
                                     <input name="phrase"

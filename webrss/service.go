@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Alkemic/webrss/repository"
-
 	"github.com/Alkemic/webrss/feed_fetcher"
+	"github.com/Alkemic/webrss/repository"
 )
 
 type feedFetcher interface {

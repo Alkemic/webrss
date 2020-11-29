@@ -8,20 +8,19 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"runtime/debug"
 	"time"
 
-	"github.com/Alkemic/webrss/updater"
-
-	"github.com/Alkemic/go-route"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	"github.com/mmcdole/gofeed"
 
+	"github.com/Alkemic/webrss/account"
 	"github.com/Alkemic/webrss/config"
+	"github.com/Alkemic/webrss/dummy"
 	"github.com/Alkemic/webrss/feed_fetcher"
 	"github.com/Alkemic/webrss/handler"
 	"github.com/Alkemic/webrss/repository"
+	"github.com/Alkemic/webrss/updater"
 	"github.com/Alkemic/webrss/webrss"
 )
 
@@ -40,6 +39,11 @@ func main() {
 	httpClient := &http.Client{}
 	feedFetcher := feed_fetcher.NewFeedParser(fp, httpClient)
 
+	userRepository := repository.NewUserRepository(db)
+	sessionRepository := dummy.NewSessionRepository(28 * 24 * time.Hour)
+	authenticateHandler := account.NewAuthenticateHandler(logger, userRepository, sessionRepository)
+	authenticateMiddleware := account.NewAuthenticateMiddleware(logger, userRepository, sessionRepository)
+
 	categoryRepository := repository.NewCategoryRepository(db)
 	feedRepository := repository.NewFeedRepository(db)
 	entryRepository := repository.NewEntryRepository(db)
@@ -49,7 +53,7 @@ func main() {
 	entryHandler := handler.NewEntry(logger, webrssService, cfg.PerPage)
 	feedHandler := handler.NewFeed(logger, webrssService)
 	updateService := updater.New(feedRepository, webrssService, feedFetcher, logger)
-	app := webrss.New(logger, cfg, categoryHandler, feedHandler, entryHandler, updateService, time.Hour)
+	app := webrss.New(logger, cfg, categoryHandler, feedHandler, entryHandler, authenticateHandler, authenticateMiddleware, updateService, time.Hour)
 	app.AddOnExit(closeFn)
 	go app.Updater(context.Background())
 	if err := app.Run(); err != nil {
@@ -67,30 +71,5 @@ func initDB(cfg *config.Config) (*sqlx.DB, error, func()) {
 	}
 	return sqlx.NewDb(db, "mysql"), nil, func() {
 		db.Close()
-	}
-}
-
-func panicDefer(rw http.ResponseWriter, req *http.Request, logger *log.Logger) {
-	if r := recover(); r != nil {
-		if logger != nil {
-			logger.Printf("Panic occured:\n%s\n", r)
-			logger.Println("stacktrace:\n" + string(debug.Stack()))
-			logger.Println("Panic end.")
-		} else {
-			log.Printf("Panic occured:\n%s\n", r)
-			log.Println("stacktrace:\n" + string(debug.Stack()))
-			log.Println("Panic end.")
-		}
-		route.InternalServerError(rw, req)
-	}
-}
-
-func PanicInterceptorWithLogger(logger *log.Logger) func(f http.HandlerFunc) http.HandlerFunc {
-	return func(f http.HandlerFunc) http.HandlerFunc {
-		return func(rw http.ResponseWriter, req *http.Request) {
-			defer panicDefer(rw, req, logger)
-
-			f(rw, req)
-		}
 	}
 }

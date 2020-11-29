@@ -1,5 +1,11 @@
 package repository
 
+import (
+	"fmt"
+
+	"golang.org/x/crypto/bcrypt"
+)
+
 type Category struct {
 	ID        int64    `db:"id" json:"id"`
 	Title     string   `db:"title" json:"title"`
@@ -45,4 +51,24 @@ type Entry struct {
 
 	Feed     Feed `db:"-" json:"feed"`
 	NewEntry bool `db:"-" json:"new_entry"`
+}
+
+type User struct {
+	ID       int    `db:"id" json:"id"`
+	Name     string `db:"name" json:"name"`
+	Email    string `db:"email" json:"email"`
+	Password []byte `db:"password" json:"-"`
+}
+
+func (u User) ValidatePassword(pass string) bool {
+	return bcrypt.CompareHashAndPassword(u.Password, []byte(pass)) == nil
+}
+
+func (u *User) SetPassword(pass string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(pass), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("cannot hash password: %w", err)
+	}
+	u.Password = hash
+	return nil
 }

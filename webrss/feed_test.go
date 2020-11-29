@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/Alkemic/webrss/feed_fetcher"
-
 	"github.com/Alkemic/webrss/repository"
 )
 
@@ -32,11 +31,15 @@ func (m *entryRepositoryMock) Get(ctx context.Context, id int64) (repository.Ent
 	panic("implement me!")
 }
 
-func (m *entryRepositoryMock) GetByURL(ctx context.Context, url string) (repository.Entry, error) {
+func (m *entryRepositoryMock) GetByURL(ctx context.Context, url string, feedID int64) (repository.Entry, error) {
 	return m.getEntryByURLResp[url], m.getEntryByURLErr[url]
 }
 
 func (m *entryRepositoryMock) ListForFeed(ctx context.Context, feedID, page int64, perPage int) ([]repository.Entry, error) {
+	panic("implement me!")
+}
+
+func (m *entryRepositoryMock) ListForPhrase(ctx context.Context, phrase string, page int64, perPage int) ([]repository.Entry, error) {
 	panic("implement me!")
 }
 

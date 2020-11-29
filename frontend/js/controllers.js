@@ -54,6 +54,18 @@ App.controller("RSSCtrl", ($scope, $http, $sce, $uibModal, $location) => {
         })
     }
 
+    $scope.editUser = user => {
+        $uibModal.open({
+            templateUrl: "edit_user.html",
+            controller: "EditUserCtrl",
+            size: "small",
+            resolve: {
+                user: () => user,
+                parentScope: () => $scope,
+            }
+        })
+    }
+
     $scope.updateFeed = feed => {
         $uibModal.open({
             templateUrl: "feed_update.html",
@@ -290,6 +302,24 @@ App.controller("RSSCtrl", ($scope, $http, $sce, $uibModal, $location) => {
             }, () => {
                 $scope.error = "Something went wrong"
             })
+    }
+
+    $scope.cancel = $uibModalInstance.dismiss
+}).controller("EditUserCtrl", ($scope, $uibModalInstance, $http, $window, user) => {
+    $scope.form = angular.copy(user)
+    $scope.save = () => {
+        let postData = `name=${encodeURIComponent($scope.form.name)}&email=${encodeURIComponent($scope.form.email)}&password=${$scope.form.password?encodeURIComponent($scope.form.password):''}`
+        $http({
+            method: 'POST',
+            url: `/api/user/`,
+            data: postData,
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+        }).then(() => {
+            $window.location.reload()
+            $uibModalInstance.close()
+        }, () => {
+            $scope.error = "Something went wrong"
+        })
     }
 
     $scope.cancel = $uibModalInstance.dismiss
