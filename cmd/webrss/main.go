@@ -16,7 +16,6 @@ import (
 
 	"github.com/Alkemic/webrss/account"
 	"github.com/Alkemic/webrss/config"
-	"github.com/Alkemic/webrss/dummy"
 	"github.com/Alkemic/webrss/feed_fetcher"
 	"github.com/Alkemic/webrss/handler"
 	"github.com/Alkemic/webrss/repository"
@@ -40,7 +39,7 @@ func main() {
 	feedFetcher := feed_fetcher.NewFeedParser(fp, httpClient)
 
 	userRepository := repository.NewUserRepository(db)
-	sessionRepository := dummy.NewSessionRepository(28 * 24 * time.Hour)
+	sessionRepository := repository.NewSessionRepository(28 * 24 * time.Hour)
 	authenticateHandler := account.NewAuthenticateHandler(logger, userRepository, sessionRepository)
 	authenticateMiddleware := account.NewAuthenticateMiddleware(logger, userRepository, sessionRepository)
 
