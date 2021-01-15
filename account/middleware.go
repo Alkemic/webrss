@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	sessionCookieName = "session"
-	sessionUserIDName = "userID"
-	backParamName     = "back"
+	sessionCookieName  = "session"
+	sessionUsernameKey = "userID"
+	backParamName      = "back"
 
 	LoginPageURL  = "/login"
 	LogoutPageURL = "/logout"
@@ -33,33 +33,33 @@ func buildLoginUrl(loginURL string, req *http.Request) string {
 }
 
 type Middleware struct {
-	log         *log.Logger
-	userRepo    userRepository
-	sessionRepo sessionRepository
+	log          *log.Logger
+	settingsRepo settingsRepository
+	sessionRepo  sessionRepository
 }
 
-func NewAuthenticateMiddleware(log *log.Logger, userRepo userRepository, sessionRepo sessionRepository) *Middleware {
+func NewAuthenticateMiddleware(log *log.Logger, settingsRepo settingsRepository, sessionRepo sessionRepository) *Middleware {
 	return &Middleware{
-		log:         log,
-		userRepo:    userRepo,
-		sessionRepo: sessionRepo,
+		log:          log,
+		settingsRepo: settingsRepo,
+		sessionRepo:  sessionRepo,
 	}
 }
 
-func (m *Middleware) getUserID(sessionID string) (int, error) {
+func (m *Middleware) getUsername(sessionID string) (string, error) {
 	sessionData, err := m.sessionRepo.Get(sessionID)
 	if err != nil {
-		return 0, fmt.Errorf("cannot get session: %w", err)
+		return "", fmt.Errorf("cannot get session: %w", err)
 	}
-	rawUserID, ok := sessionData[sessionUserIDName]
-	if !ok || rawUserID == "" {
-		return 0, ErrMissingUserID
+	rawUsername, ok := sessionData[sessionUsernameKey]
+	if !ok || rawUsername == "" {
+		return "", ErrMissingUserID
 	}
-	userID, ok := rawUserID.(int)
+	username, ok := rawUsername.(string)
 	if !ok {
-		return 0, ErrMissingUserID
+		return "", ErrMissingUserID
 	}
-	return userID, nil
+	return username, nil
 }
 
 func (m *Middleware) LoginRequiredMiddleware(f http.HandlerFunc) http.HandlerFunc {
@@ -75,7 +75,7 @@ func (m *Middleware) LoginRequiredMiddleware(f http.HandlerFunc) http.HandlerFun
 			return
 		}
 
-		userID, err := m.getUserID(sessionID)
+		username, err := m.getUsername(sessionID)
 		if err != nil {
 			if errors.Is(err, repository.ErrNotFound) || errors.Is(err, ErrMissingUserID) {
 				if strings.Contains(req.Header.Get("Accept"), "application/json") {
@@ -91,9 +91,14 @@ func (m *Middleware) LoginRequiredMiddleware(f http.HandlerFunc) http.HandlerFun
 			return
 		}
 
-		user, err := m.userRepo.GetByID(req.Context(), userID)
+		user, err := m.settingsRepo.GetUser(req.Context())
 		if err != nil {
 			m.log.Println("cannot get user:", err)
+			http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+			return
+		}
+		if user.Name != username {
+			m.log.Println("wrong user in session")
 			http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}

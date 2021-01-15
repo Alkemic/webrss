@@ -63,12 +63,15 @@
 </head>
 
 <body class="text-center">
-<form class="form-signin" action="{{ .url }}" method="post">
+<form class="form-signin" action="{{ .URL }}" method="post">
     <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-    <label for="inputEmail" class="sr-only">Email address</label>
-    <input name="email" type="email" class="form-control" placeholder="Email" value="{{ .email }}" required autofocus>
+    {{ .Form.RenderErrors }}
+    <label for="inputEmail" class="sr-only">Username</label>
+    {{ .Form.Fields.username.Render }}
+{{/*    <input name="email" type="email" class="form-control" placeholder="Email" value="{{ .Form.Fields.email.Value }}" required autofocus>*/}}
     <label for="inputPassword" class="sr-only">Password</label>
-    <input name="password" type="password" id="password" class="form-control" placeholder="Password" value="{{ .password }}" required>
+    {{ .Form.Fields.password.Render }}
+{{/*    <input name="password" type="password" id="password" class="form-control" placeholder="Password" value="{{ .Form.Fields.password.Value }}" required>*/}}
     <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
 </form>
 </body>

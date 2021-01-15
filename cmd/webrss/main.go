@@ -38,10 +38,11 @@ func main() {
 	httpClient := &http.Client{}
 	feedFetcher := feed_fetcher.NewFeedParser(fp, httpClient)
 
-	userRepository := repository.NewUserRepository(db)
+	//userRepository := repository.NewUserRepository(db)
+	settingsRepository := repository.NewSettingsRepository(db)
 	sessionRepository := repository.NewSessionRepository(28 * 24 * time.Hour)
-	authenticateHandler := account.NewAuthenticateHandler(logger, userRepository, sessionRepository)
-	authenticateMiddleware := account.NewAuthenticateMiddleware(logger, userRepository, sessionRepository)
+	authenticateHandler := account.NewAuthenticateHandler(logger, settingsRepository, sessionRepository)
+	authenticateMiddleware := account.NewAuthenticateMiddleware(logger, settingsRepository, sessionRepository)
 
 	categoryRepository := repository.NewCategoryRepository(db)
 	feedRepository := repository.NewFeedRepository(db)

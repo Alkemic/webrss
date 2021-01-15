@@ -2,33 +2,35 @@ package account
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 
-	"github.com/Alkemic/webrss/repository"
-
+	"github.com/Alkemic/forms"
 	"github.com/google/uuid"
+
+	"github.com/Alkemic/webrss/repository"
 )
 
-type userRepository interface {
-	GetByID(ctx context.Context, id int) (repository.User, error)
-	GetByEmail(ctx context.Context, email string) (repository.User, error)
-	Update(ctx context.Context, user repository.User) error
+type settingsRepository interface {
+	GetUser(ctx context.Context) (repository.User, error)
+	SaveUser(ctx context.Context, user repository.User) error
 }
 
 type AuthenticateHandler struct {
-	log         *log.Logger
-	userRepo    userRepository
-	sessionRepo sessionRepository
+	log          *log.Logger
+	settingsRepo settingsRepository
+	sessionRepo  sessionRepository
 }
 
-func NewAuthenticateHandler(log *log.Logger, userRepo userRepository, sessionRepo sessionRepository) *AuthenticateHandler {
+func NewAuthenticateHandler(log *log.Logger, settingsRepo settingsRepository, sessionRepo sessionRepository) *AuthenticateHandler {
 	return &AuthenticateHandler{
-		log:         log,
-		userRepo:    userRepo,
-		sessionRepo: sessionRepo,
+		log:          log,
+		settingsRepo: settingsRepo,
+		sessionRepo:  sessionRepo,
 	}
 }
 
@@ -37,11 +39,14 @@ func clearSession(rw http.ResponseWriter, req *http.Request) {
 	http.SetCookie(rw, cookie)
 }
 
-func (a AuthenticateHandler) setSession(userID int, rw http.ResponseWriter, req *http.Request) error {
-	sessionData := map[string]interface{}{
-		sessionUserIDName: userID,
+func (a AuthenticateHandler) setUserSession(username string, rw http.ResponseWriter, req *http.Request) error {
+	sessionID, err := getSessionID(req)
+	if err != nil || sessionID == "" {
+		sessionID = uuid.New().String()
 	}
-	sessionID := uuid.New().String()
+	sessionData := map[string]interface{}{
+		sessionUsernameKey: username,
+	}
 	if err := a.sessionRepo.Set(sessionID, sessionData); err != nil {
 		return fmt.Errorf("cannot set session: %w", err)
 	}
@@ -55,45 +60,56 @@ func (a AuthenticateHandler) setSession(userID int, rw http.ResponseWriter, req 
 	return nil
 }
 
+func getBackURL(req *http.Request) string {
+	backURL := req.URL.Query().Get(backParamName)
+	if backURL == "" {
+		return "/"
+	}
+	return backURL
+}
+
 func (a *AuthenticateHandler) Login(rw http.ResponseWriter, req *http.Request) {
-	var email, password string
-	if req.Method == http.MethodPost {
-		backURL := req.URL.Query().Get(backParamName)
-		if backURL == "" {
-			backURL = "/"
-		}
+	loginForm := newLoginForm()
 
-		if err := req.ParseForm(); err != nil {
-			log.Println("cannot parse form:", err)
+	if err := req.ParseForm(); err != nil {
+		a.log.Println("cannot parse form:", err)
+		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	if req.Method == http.MethodPost && loginForm.IsValid(req.PostForm) {
+		username := loginForm.CleanedData["username"].(string)
+		password := loginForm.CleanedData["password"].(string)
+		user, err := a.settingsRepo.GetUser(req.Context())
+		if errors.Is(err, sql.ErrNoRows) {
+			loginForm.AddError("Incorrect email or password")
+		} else if err != nil {
+			a.log.Println("cannot get user:", err)
 			http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
-		}
-		email = req.Form.Get("email")
-		user, err := a.userRepo.GetByEmail(req.Context(), email)
-		if err != nil {
-			log.Println("cannot get user:", err)
-			http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-			return
-		}
-
-		password = req.Form.Get("password")
-		if user.ValidatePassword(password) {
-			if nil := a.setSession(user.ID, rw, req); err != nil {
-				http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		} else {
+			if user.Validate(username, password) {
+				if err := a.setUserSession(user.Name, rw, req); err != nil {
+					a.log.Println("cannot set session:", err)
+					http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+					return
+				}
+				http.Redirect(rw, req, getBackURL(req), http.StatusFound)
 				return
+			} else {
+				loginForm.AddError("Incorrect email or password")
 			}
-			http.Redirect(rw, req, backURL, http.StatusFound)
-			return
 		}
 	}
 
-	tmpl := template.Must(template.ParseFiles("templates/login.html"))
-	tmplData := map[string]string{
-		"email":    email,
-		"password": password,
-		"url":      req.URL.String(),
+	tmplData := struct {
+		Form *forms.Form
+		URL  string
+	}{
+		Form: loginForm,
+		URL:  req.URL.String(),
 	}
-	if err := tmpl.Execute(rw, tmplData); err != nil {
+	if err := template.Must(template.ParseFiles("templates/login.html")).Execute(rw, tmplData); err != nil {
 		log.Println("cannot execute template:", err)
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
@@ -137,20 +153,17 @@ func (a *AuthenticateHandler) Edit(rw http.ResponseWriter, req *http.Request) {
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	email := req.Form.Get("email")
-	name := req.Form.Get("name")
+	username := req.Form.Get("name")
 	password := req.Form.Get("password")
-	a.log.Printf("'%s', '%s', '%s'\n", email, name, password)
 
-	if email == "" || name == "" {
+	if username == "" {
 		rw.WriteHeader(http.StatusBadRequest)
-		fmt.Fprint(rw, "empty email or user name")
+		fmt.Fprint(rw, "empty username")
 		return
 	}
 
 	user := GetUser(req)
-	user.Email = email
-	user.Name = name
+	user.Name = username
 	if password != "" {
 		if err := user.SetPassword(password); err != nil {
 			a.log.Println("cannot update password:", err)
@@ -158,8 +171,13 @@ func (a *AuthenticateHandler) Edit(rw http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
-	if err := a.userRepo.Update(req.Context(), user); err != nil {
+	if err := a.settingsRepo.SaveUser(req.Context(), user); err != nil {
 		a.log.Println("cannot save user:", err)
+		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	if err := a.setUserSession(user.Name, rw, req); err != nil {
+		a.log.Println("cannot set session:", err)
 		http.Error(rw, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

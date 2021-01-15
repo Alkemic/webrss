@@ -3,6 +3,7 @@ module github.com/Alkemic/webrss
 go 1.13
 
 require (
+	github.com/Alkemic/forms v0.0.0-20201129172120-c3651a31b013
 	github.com/Alkemic/go-route v0.0.0-20201111180302-4c2956194107
 	github.com/PuerkitoBio/goquery v1.5.1 // indirect
 	github.com/antchfx/htmlquery v1.2.2

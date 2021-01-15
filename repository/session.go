@@ -28,6 +28,7 @@ func (r *SessionRepository) Get(sessionID string) (map[string]interface{}, error
 	r.RLock()
 	session, ok := r.store[sessionID]
 	if !ok {
+		r.RUnlock()
 		return nil, ErrNotFound
 	}
 	r.RUnlock()

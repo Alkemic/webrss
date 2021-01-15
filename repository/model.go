@@ -54,14 +54,12 @@ type Entry struct {
 }
 
 type User struct {
-	ID       int    `db:"id" json:"id"`
 	Name     string `db:"name" json:"name"`
-	Email    string `db:"email" json:"email"`
 	Password []byte `db:"password" json:"-"`
 }
 
-func (u User) ValidatePassword(pass string) bool {
-	return bcrypt.CompareHashAndPassword(u.Password, []byte(pass)) == nil
+func (u User) Validate(user, pass string) bool {
+	return u.Name == user && bcrypt.CompareHashAndPassword(u.Password, []byte(pass)) == nil
 }
 
 func (u *User) SetPassword(pass string) error {
