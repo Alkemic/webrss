@@ -29,4 +29,5 @@ utf8mb4 is required, as many sites uses emojis
 
 ## Auth
 
-* Default email / password is `admin@webrss.web` / `admin`
+* Only single user
+* Default email / password is `admin` / `admin`
