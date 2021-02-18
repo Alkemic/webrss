@@ -47,7 +47,14 @@ func (r *feedRepository) Get(ctx context.Context, id int64) (Feed, error) {
 }
 
 func (r *feedRepository) ListForCategories(ctx context.Context, categoriesIDs []int64) ([]Feed, error) {
+	if len(categoriesIDs) == 0 {
+		return []Feed{}, nil
+	}
+
 	query, args, err := sqlx.In(selectFeedsForCategoriesQuery, categoriesIDs)
+	if err != nil {
+		return nil, fmt.Errorf("error preparing query 'in' values: %w", err)
+	}
 	feeds := []Feed{}
 	if err = r.db.SelectContext(ctx, &feeds, r.db.Rebind(query), args...); err != nil {
 		return nil, fmt.Errorf("cannot select feeds: %w", err)
