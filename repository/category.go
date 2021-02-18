@@ -10,7 +10,7 @@ import (
 var (
 	selectCategoriesQuery = "select * from category where deleted_at is null order by `order` asc;"
 	selectCategoryQuery   = `select * from category where deleted_at is null and id = ?;`
-	maxCategoryOrderQuery = `select max(c.order) from category c where deleted_at is null;`
+	maxCategoryOrderQuery = `select coalesce(max(c.order), 0) max_order from category c where deleted_at is null;`
 	createCategoryQuery   = "insert into category(title, `order`, created_at) values (:title, :order, :created_at);"
 	getPrevQuery          = "select * from category where deleted_at is null and `order` < ? order by `order` desc limit 1;"
 	getNextQuery          = "select * from category where deleted_at is null and `order` > ? order by `order` asc limit 1;"
