@@ -35,7 +35,7 @@
     "gulp-sourcemaps": "2.6.5",
     "less-plugin-clean-css": "1.5.1",
     "set-value": "3.0.2",
-    "minimist": "0.2.1",
+    "minimist": "1.2.6",
     "lodash.template": "4.5.0"
   }
 }
